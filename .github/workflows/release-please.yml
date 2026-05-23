@@ -1,0 +1,233 @@
+# Release Please opens release PRs from Conventional Commits on main; merging
+# creates a tag and runs the PyPI publish job. See RELEASING.md.
+
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      version:
+        description: >-
+          Version to publish (e.g. 1.0.0). Must match pyproject.toml on main.
+          Leave empty to only run release-please on push.
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      pr: ${{ steps.release.outputs.pr }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: googleapis/release-please-action@v5
+        id: release
+        with:
+          release-type: python
+
+      - name: Assert release-please acted on releasable commits
+        if: github.event_name == 'push'
+        shell: bash
+        env:
+          RELEASE_CREATED: ${{ steps.release.outputs.release_created }}
+          RELEASE_PR: ${{ steps.release.outputs.pr }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          commit_title=$(git log -1 --format='%s' "$COMMIT_SHA")
+          if echo "$commit_title" | grep -qE '^(feat|fix)(\([^)]*\))?!?:' && \
+             [[ "$RELEASE_CREATED" != "true" ]] && \
+             [[ -z "$RELEASE_PR" ]]; then
+            echo "ERROR: Commit '$commit_title' looks releasable but release-please neither created a release nor opened/updated a release PR." >&2
+            echo "This usually means the commit message could not be parsed. Check that squash_merge_commit_message=BLANK is set on the repository." >&2
+            exit 1
+          fi
+
+  resolve-release-pr:
+    needs: release-please
+    if: >-
+      always() &&
+      needs.release-please.result == 'success' &&
+      needs.release-please.outputs.pr != '' &&
+      needs.release-please.outputs.release_created != 'true'
+    runs-on: ubuntu-latest
+    outputs:
+      head_sha: ${{ steps.pr.outputs.head_sha }}
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Resolve release PR head
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_PR_JSON: ${{ needs.release-please.outputs.pr }}
+        run: |
+          set -euo pipefail
+          pr_number=$(jq -r '.number' <<<"$RELEASE_PR_JSON")
+          head_sha=$(gh pr view "$pr_number" \
+            --repo "$GITHUB_REPOSITORY" \
+            --json headRefOid \
+            -q .headRefOid)
+          echo "head_sha=${head_sha}" >>"$GITHUB_OUTPUT"
+
+  ci:
+    needs: [release-please, resolve-release-pr]
+    if: >-
+      always() &&
+      needs.release-please.result == 'success' &&
+      needs.resolve-release-pr.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: read
+    steps:
+      - name: Start ci check
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          check_id=$(gh api "repos/${{ github.repository }}/check-runs" \
+            --method POST \
+            -f name=ci \
+            -f head_sha="${{ needs.resolve-release-pr.outputs.head_sha }}" \
+            -f status=in_progress \
+            -f started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --jq .id)
+          echo "id=${check_id}" >>"$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.resolve-release-pr.outputs.head_sha }}
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Ruff
+        id: ruff
+        run: bash .github/ci/ruff
+
+      - name: Mypy
+        id: mypy
+        run: bash .github/ci/mypy
+
+      - name: Pytest (hermetic)
+        id: pytest
+        run: bash .github/ci/pytest-hermetic
+
+      - name: Complete ci check
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          conclusion=success
+          if [[ "${{ steps.ruff.outcome }}" != "success" ]] \
+            || [[ "${{ steps.mypy.outcome }}" != "success" ]] \
+            || [[ "${{ steps.pytest.outcome }}" != "success" ]]; then
+            conclusion=failure
+          fi
+          gh api "repos/${{ github.repository }}/check-runs/${{ steps.check.outputs.id }}" \
+            --method PATCH \
+            -f status=completed \
+            -f conclusion="$conclusion" \
+            -f completed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+  publish-pypi:
+    needs: release-please
+    if: |
+      always() && (
+        (github.event_name == 'push' && needs.release-please.outputs.release_created == 'true') ||
+        (github.event_name == 'workflow_dispatch' && inputs.version != '')
+      )
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      published_version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v7
+
+      - name: Verify version (manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          pkg_version=$(uv run python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')
+          input_version="${{ inputs.version }}"
+          if [[ "$pkg_version" != "$input_version" ]]; then
+            echo "ERROR: Input version '$input_version' does not match pyproject.toml version '$pkg_version'." >&2
+            exit 1
+          fi
+
+      - name: Install Python dependencies (dev)
+        run: uv sync --group dev
+
+      - name: Ruff
+        run: bash .github/ci/ruff
+
+      - name: Mypy
+        run: bash .github/ci/mypy
+
+      - name: Pytest (hermetic)
+        run: bash .github/ci/pytest-hermetic
+
+      - name: Read package version
+        id: version
+        run: |
+          version=$(uv run python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')
+          echo "version=${version}" >>"$GITHUB_OUTPUT"
+
+      - name: Build distributions
+        run: uv build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  smoke-test:
+    name: Post-publish smoke test (pipx)
+    needs: publish-pypi
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install pipx
+        run: python3 -m pip install --user pipx
+
+      - name: Wait for PyPI
+        shell: bash
+        run: |
+          version="${{ needs.publish-pypi.outputs.published_version }}"
+          for i in $(seq 1 18); do
+            if curl -fsSL "https://pypi.org/pypi/cloudflare-dns-updater/json" \
+              | jq -e --arg v "$version" '.releases[$v] != null' >/dev/null; then
+              echo "Package available on PyPI."
+              exit 0
+            fi
+            echo "Attempt $i: waiting for cloudflare-dns-updater==${version}..."
+            sleep 10
+          done
+          echo "Package did not become available in time." >&2
+          exit 1
+
+      - name: pipx install and --help
+        shell: bash
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          pipx install "cloudflare-dns-updater==${{ needs.publish-pypi.outputs.published_version }}"
+          output=$(cloudflare-dns-updater --help)
+          echo "$output"
+          echo "$output" | grep -q "usage:"

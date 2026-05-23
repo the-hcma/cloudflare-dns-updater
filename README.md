@@ -2,31 +2,60 @@
 
 Update Cloudflare DNS **A** and **AAAA** records when your external IP address changes.
 
-## Install
+Published on [PyPI](https://pypi.org/project/cloudflare-dns-updater/) as **`cloudflare-dns-updater`**.
+
+## Install with pipx (recommended)
+
+[pipx](https://pipx.pypa.io/) installs the CLI in an isolated environment and puts `cloudflare-dns-updater` on your `PATH` (usually `~/.local/bin`).
 
 ```bash
+# install pipx once (Debian/Ubuntu example)
+sudo apt install pipx
+pipx ensurepath
+# open a new shell, or: source ~/.bashrc
+
 pipx install cloudflare-dns-updater
-# or: uv tool install cloudflare-dns-updater
+cloudflare-dns-updater --help
 ```
 
-From a git checkout:
+Upgrade or reinstall later:
 
 ```bash
-uv sync --group dev
-uv pip install -e .
+pipx upgrade cloudflare-dns-updater
+# or pin a version:
+pipx install cloudflare-dns-updater==1.0.0 --force
+```
+
+Other installers:
+
+```bash
+uv tool install cloudflare-dns-updater
+pip install --user cloudflare-dns-updater   # not isolated; prefer pipx
 ```
 
 ## Quick start
 
 ```bash
 mkdir -p ~/.config/cloudflare-dns-updater
-cp config.example.json ~/.config/cloudflare-dns-updater/config.json
+curl -fsSL https://raw.githubusercontent.com/the-hcma/cloudflare-dns-updater/main/config.example.json \
+  -o ~/.config/cloudflare-dns-updater/config.json
 # edit config.json — set cloudflare_api_token, zone, and dns_entries
-cloudflare-dns-updater -v -d
-cloudflare-dns-updater
+cloudflare-dns-updater -v -d    # dry-run: discover IPs, no Cloudflare writes
+cloudflare-dns-updater          # update DNS when IPv4 or IPv6 changed
 ```
 
 Create a Cloudflare API token at https://dash.cloudflare.com/profile/api-tokens with permission to edit DNS records for your zone.
+
+### Run on a schedule (cron)
+
+After pipx install and config are in place:
+
+```cron
+# every 5 minutes
+*/5 * * * * /home/you/.local/bin/cloudflare-dns-updater >>/tmp/cloudflare-dns-updater.log 2>&1
+```
+
+Use `-f` if you want to recheck Cloudflare even when local state files show no change.
 
 ## Configuration
 
@@ -107,25 +136,16 @@ uv run pytest
 uv run pytest -m integration   # live network checks
 ```
 
+## Releases
+
+Versioning and PyPI publish are documented in [RELEASING.md](./RELEASING.md). End users install with `pipx install cloudflare-dns-updater`.
+
 ## Repository setup
 
-This repo follows [the-hcma](https://github.com/the-hcma) conventions.
+This repo follows [the-hcma](https://github.com/the-hcma) conventions. Validate with:
 
 ```bash
-# from a clone of https://github.com/the-hcma/repository-helpers
 scripts/check-repo-practices --repo the-hcma/cloudflare-dns-updater --suggest
 ```
-
-After the **`merge-it`** label exists, the checker enforces Graphite merge-queue wiring, `protect-main`, and classic `main` protection (see [repository-helpers AGENTS.md](https://github.com/the-hcma/repository-helpers/blob/main/AGENTS.md)). Until onboarding is complete, expect a non-zero exit.
-
-| Step | Status |
-| --- | --- |
-| Workflows (`ci.yml`, cleanup, `merged-pr-closer`, dependabot auto-merge) | in repo |
-| **`merge-it`** label | created |
-| Squash-only merge settings | applied |
-| **`protect-main`** ruleset + classic `main` protection | **pending** — GitHub API returns 403 on private repos without Pro ([enable rulesets](https://github.com/the-hcma/cloudflare-dns-updater/settings/rules) / [branch protection](https://github.com/the-hcma/cloudflare-dns-updater/settings/branches) in the UI, or run `check-repo-practices --apply` once available) |
-| Graphite merge queue on `main` (squash, label `merge-it`) | **manual** in [Graphite settings](https://app.graphite.com/settings/merge-queue) |
-
-`check-repo-practices --new-repo` currently passes before `merge-it` exists; see [repository-helpers#144](https://github.com/the-hcma/repository-helpers/issues/144).
 
 See [GRAPHITE.md](./GRAPHITE.md) for stacked PRs and the `merge-it` merge queue.
