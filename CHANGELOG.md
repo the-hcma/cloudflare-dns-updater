@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.2](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.2.1...v0.2.2) (2026-05-23)
+
+
+### Bug Fixes
+
+* **ci:** harden merged-pr-closer against transient gh 401 errors ([#17](https://github.com/the-hcma/cloudflare-dns-updater/issues/17)) ([8f70a31](https://github.com/the-hcma/cloudflare-dns-updater/commit/8f70a31e71ee00091aaad881f379a406baea0d27))
+* use PyPI-backed badge that reflects latest release ([#13](https://github.com/the-hcma/cloudflare-dns-updater/issues/13)) ([10027e4](https://github.com/the-hcma/cloudflare-dns-updater/commit/10027e40a2f57ecee61fb84d26521354e1b6c555))
+
+
+### Documentation
+
+* expand AGENTS.md with session startup and PR workflow ([#14](https://github.com/the-hcma/cloudflare-dns-updater/issues/14)) ([7cc41b0](https://github.com/the-hcma/cloudflare-dns-updater/commit/7cc41b0ec43219bd04386afc0e74a6d3ddadcd42))
+
 ## [0.2.1](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.2.0...v0.2.1) (2026-05-23)
 
 
