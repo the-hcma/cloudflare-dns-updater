@@ -10,11 +10,13 @@ import pytest
 from helpers import MOCK_DNS_ENTRIES, MOCK_ZONE, sample_config_dict, write_config_file
 
 from dns_updater.config import (
+    ConfigNotFoundError,
     default_config_path,
     example_config_path,
     load_cloudflare_api_token,
     load_config,
     resolve_config_path,
+    write_sample_config,
 )
 
 
@@ -75,11 +77,20 @@ def test_env_overrides_token_only(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
     assert config.dns_entries == ("a.custom.zone", "b.custom.zone")
 
 
-def test_missing_config_raises(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_missing_config_writes_sample(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("CLOUDFLARE_API_TOKEN", raising=False)
-    missing = tmp_path / "missing.json"
-    with pytest.raises(RuntimeError, match="configuration not found"):
+    missing = tmp_path / "cloudflare-dns-updater" / "config.json"
+    with pytest.raises(ConfigNotFoundError) as exc_info:
         load_config(missing)
+    assert exc_info.value.sample_written is True
+    assert missing.is_file()
+    assert "your-cloudflare-api-token" in missing.read_text(encoding="utf-8")
+
+
+def test_write_sample_config_skips_existing(tmp_path: Path) -> None:
+    dest = tmp_path / "config.json"
+    dest.write_text("{}", encoding="utf-8")
+    assert write_sample_config(dest) is False
 
 
 def test_empty_token_in_json_raises(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

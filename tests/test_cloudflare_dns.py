@@ -124,7 +124,9 @@ def test_update_dns_entries_ipv4_only(mock_factory: MagicMock, mock_client: Magi
 @patch.dict("os.environ", {}, clear=True)
 def test_cloudflare_client_requires_token(tmp_path: Path) -> None:
     missing_config = tmp_path / "no-config.json"
-    with pytest.raises(RuntimeError, match="configuration not found"):
+    from dns_updater.config import ConfigNotFoundError
+
+    with pytest.raises(ConfigNotFoundError, match="configuration not found"):
         update_dns_entries("203.0.113.1", None, config_path=missing_config)
 
 

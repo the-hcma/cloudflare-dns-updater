@@ -10,6 +10,7 @@ from pathlib import Path
 
 from dns_updater.build_info import format_cli_version_line, format_help_version_line
 from dns_updater.cloudflare_dns import update_dns_entries
+from dns_updater.config import ConfigNotFoundError
 from dns_updater.ip import load_external_addresses, persist_external_addresses
 from dns_updater.terminal import (
     ColoredHelpFormatter,
@@ -176,10 +177,14 @@ def main() -> None:
         print("\n")
         print_error("interrupted")
         raise SystemExit(1) from None
+    except ConfigNotFoundError as exception:
+        print_error(str(exception))
+        raise SystemExit(1) from None
     except Exception as exception:
-        traceback.print_exc(file=sys.stderr)
-        print_error(f"execution failed: {exception}")
-        raise SystemExit(1) from exception
+        if args.verbose:
+            traceback.print_exc(file=sys.stderr)
+        print_error(str(exception) if args.verbose else f"execution failed: {exception}")
+        raise SystemExit(1) from None
 
 
 if __name__ == "__main__":

@@ -3,7 +3,6 @@
 [![CI](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/ci.yml/badge.svg)](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/ci.yml)
 [![Release](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/release-please.yml/badge.svg)](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/release-please.yml)
 [![PyPI](https://img.shields.io/pypi/v/cloudflare-dns-updater)](https://pypi.org/project/cloudflare-dns-updater/)
-[![PyPI downloads](https://img.shields.io/pypi/dm/cloudflare-dns-updater)](https://pypi.org/project/cloudflare-dns-updater/)
 [![Python ≥ 3.12](https://img.shields.io/badge/python-%E2%89%A53.12-brightgreen)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
