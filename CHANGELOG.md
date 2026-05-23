@@ -6,6 +6,7 @@
 ### Bug Fixes
 
 * **ci:** harden merged-pr-closer against transient gh 401 errors ([#17](https://github.com/the-hcma/cloudflare-dns-updater/issues/17)) ([8f70a31](https://github.com/the-hcma/cloudflare-dns-updater/commit/8f70a31e71ee00091aaad881f379a406baea0d27))
+* discover globally addressable IPv6 from host interfaces ([#15](https://github.com/the-hcma/cloudflare-dns-updater/issues/15)) ([d908d43](https://github.com/the-hcma/cloudflare-dns-updater/commit/d908d43f02e070bc80b8b70775f7b5d4f8048a06))
 * use PyPI-backed badge that reflects latest release ([#13](https://github.com/the-hcma/cloudflare-dns-updater/issues/13)) ([10027e4](https://github.com/the-hcma/cloudflare-dns-updater/commit/10027e40a2f57ecee61fb84d26521354e1b6c555))
 
 
