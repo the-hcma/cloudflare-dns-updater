@@ -23,7 +23,7 @@ Upgrade or reinstall later:
 ```bash
 pipx upgrade cloudflare-dns-updater
 # or pin a version:
-pipx install cloudflare-dns-updater==1.0.0 --force
+pipx install cloudflare-dns-updater==0.1.0 --force
 ```
 
 Other installers:
