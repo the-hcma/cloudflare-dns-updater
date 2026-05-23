@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.3.0...v0.4.0) (2026-05-23)
+
+
+### Features
+
+* log when external addresses and DNS records are unchanged ([#21](https://github.com/the-hcma/cloudflare-dns-updater/issues/21)) ([fd45a35](https://github.com/the-hcma/cloudflare-dns-updater/commit/fd45a356541ad63402fbe24afb4a4c0bb4bc61fb))
+
 ## [0.3.0](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.2.2...v0.3.0) (2026-05-23)
 
 
