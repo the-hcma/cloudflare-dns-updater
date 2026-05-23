@@ -4,7 +4,11 @@ PyPI publishing is automated from `main` via [Release Please](https://github.com
 
 ## One-time PyPI trusted publishing
 
-Before the first workflow publish succeeds, configure [trusted publishing](https://docs.pypi.org/trusted-publishers/) on [PyPI](https://pypi.org/manage/project/cloudflare-dns-updater/settings/publishing/) (the project is created on first upload if it does not exist yet):
+The GitHub **`pypi`** environment already exists. Before CI can publish, add a [trusted publisher](https://docs.pypi.org/trusted-publishers/) on PyPI:
+
+1. Sign in at [pypi.org](https://pypi.org/) (account must own the `cloudflare-dns-updater` project name).
+2. Open **Your projects** → **Add new project** → register **`cloudflare-dns-updater`** (if not created yet), or open the project → **Publishing** → **Add a new pending publisher**.
+3. Choose **GitHub** and set:
 
 | Field | Value |
 | --- | --- |
@@ -13,10 +17,17 @@ Before the first workflow publish succeeds, configure [trusted publishing](https
 | Workflow name | `release-please.yml` |
 | Environment | `pypi` |
 
-Create the matching GitHub environment (no required reviewers needed for publish):
+4. Re-run the failed publish job after a release tag exists:
 
 ```bash
-gh api --method PUT "repos/the-hcma/cloudflare-dns-updater/environments/pypi"
+gh run list --repo the-hcma/cloudflare-dns-updater --workflow release-please.yml --limit 1
+gh run rerun <run-id> --failed --repo the-hcma/cloudflare-dns-updater
+```
+
+Or dispatch manually when `pyproject.toml` on `main` matches the version you want:
+
+```bash
+gh workflow run release-please.yml --repo the-hcma/cloudflare-dns-updater -f version=0.1.0
 ```
 
 ## Merge strategy
