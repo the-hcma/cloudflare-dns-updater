@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from dns_updater.cli import run
 from dns_updater.exit_codes import EXIT_OK, EXIT_UPDATED
 from dns_updater.ip import ExternalAddresses
@@ -16,6 +18,7 @@ def test_run_skips_when_unchanged(
     mock_load: MagicMock,
     mock_persist: MagicMock,
     mock_update: MagicMock,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     mock_load.return_value = ExternalAddresses(
         ipv4="1.2.3.4",
@@ -25,9 +28,12 @@ def test_run_skips_when_unchanged(
         previous_ipv4="1.2.3.4",
         previous_ipv6=None,
     )
-    assert run(force=False) == EXIT_OK
+    with caplog.at_level("WARNING", logger="dns_updater"):
+        assert run(force=False) == EXIT_OK
     mock_persist.assert_not_called()
     mock_update.assert_not_called()
+    assert "external addresses unchanged" in caplog.text
+    assert "skipping Cloudflare update" in caplog.text
 
 
 @patch("dns_updater.cli.update_dns_entries")

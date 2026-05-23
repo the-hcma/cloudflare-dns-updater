@@ -83,6 +83,11 @@ def run(
         print_address_line("IPv6", addresses.ipv6, addresses.ipv6_source)
 
     if not force and not addresses.changed:
+        _LOGGER.warning(
+            "external addresses unchanged (IPv4=%s, IPv6=%s); skipping Cloudflare update",
+            addresses.ipv4,
+            addresses.ipv6 or "none",
+        )
         return EXIT_OK
 
     if force and not addresses.changed:

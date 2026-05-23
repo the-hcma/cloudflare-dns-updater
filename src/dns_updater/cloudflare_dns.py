@@ -191,7 +191,7 @@ def update_dns_entries(
             raise RuntimeError(msg) from error
 
     if records_changed == 0:
-        _LOGGER.info(
+        _LOGGER.warning(
             "Cloudflare: all %d record(s) already match discovered addresses",
             records_checked,
         )
