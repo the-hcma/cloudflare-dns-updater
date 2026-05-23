@@ -50,6 +50,9 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/dns_updater"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"config.example.json" = "dns_updater/config.example.json"
+
 [dependency-groups]
 dev = [
     "mypy>=1.15.0",

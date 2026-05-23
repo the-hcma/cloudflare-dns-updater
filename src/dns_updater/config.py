@@ -7,6 +7,7 @@ import logging
 import os
 import re
 from dataclasses import dataclass
+from importlib.resources import files
 from pathlib import Path
 from subprocess import run
 from typing import Final
@@ -20,6 +21,28 @@ _DEFAULT_ZONE: Final = "example.com"
 _DEFAULT_DNS_ENTRIES: Final = ("example.com", "home.example.com")
 _DEFAULT_RECORD_TTL: Final = 120
 _DEFAULT_ROUTE_VIA: Final = re.compile(r"\bvia\s+(\d+\.\d+\.\d+\.\d+)\b")
+
+
+class ConfigNotFoundError(RuntimeError):
+    """Raised when no config file exists and CLOUDFLARE_API_TOKEN is unset."""
+
+    def __init__(self, path: Path, *, sample_written: bool) -> None:
+        self.path = path
+        self.sample_written = sample_written
+        super().__init__(self._format_message())
+
+    def _format_message(self) -> str:
+        if self.sample_written:
+            return (
+                f"configuration not found; created starter config at {self.path}\n"
+                f"  1. Edit cloudflare_api_token, zone, and dns_entries\n"
+                f"  2. Run cloudflare-dns-updater again\n"
+                f"  Or set {_TOKEN_ENV_VAR} in the environment."
+            )
+        return (
+            f"configuration not found: {self.path}\n"
+            f"  Set {_TOKEN_ENV_VAR} or create the file from config.example.json"
+        )
 
 
 @dataclass(frozen=True)
@@ -51,10 +74,31 @@ def default_config_path() -> Path:
     return _xdg_config_home() / _CONFIG_DIR_NAME / "config.json"
 
 
+def example_config_text() -> str:
+    """Return the packaged config.example.json contents."""
+    package_example = files("dns_updater").joinpath("config.example.json")
+    try:
+        return package_example.read_text(encoding="utf-8")
+    except (FileNotFoundError, OSError, TypeError):
+        repo_example = Path(__file__).resolve().parents[2] / "config.example.json"
+        return repo_example.read_text(encoding="utf-8")
+
+
 def example_config_path() -> Path:
-    """Return the path to config.example.json in the repository or install tree."""
-    repo_root = Path(__file__).resolve().parents[2]
-    return repo_root / "config.example.json"
+    """Return a path to the example config (repository root in dev, package when installed)."""
+    repo_example = Path(__file__).resolve().parents[2] / "config.example.json"
+    if repo_example.is_file():
+        return repo_example
+    return Path(str(files("dns_updater").joinpath("config.example.json")))
+
+
+def write_sample_config(dest: Path) -> bool:
+    """Write a starter config to dest when it does not exist. Return True if created."""
+    if dest.exists():
+        return False
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(example_config_text(), encoding="utf-8")
+    return True
 
 
 def host_dot_one(ipv4_address: str) -> str:
@@ -226,8 +270,12 @@ def load_config(config_path: Path | None = None) -> DnsUpdaterConfig:
         )
 
     if not path.is_file():
-        msg = f"configuration not found: create {path} from config.example.json or set {_TOKEN_ENV_VAR}"
-        raise RuntimeError(msg)
+        sample_written = False
+        try:
+            sample_written = write_sample_config(path)
+        except OSError:
+            sample_written = False
+        raise ConfigNotFoundError(path, sample_written=sample_written)
 
     with open(path, encoding="UTF-8") as config_file:
         data = json.load(config_file)
