@@ -40,8 +40,7 @@ class ConfigNotFoundError(RuntimeError):
                 f"  Or set {_TOKEN_ENV_VAR} in the environment."
             )
         return (
-            f"configuration not found: {self.path}\n"
-            f"  Set {_TOKEN_ENV_VAR} or create the file from config.example.json"
+            f"configuration not found: {self.path}\n  Set {_TOKEN_ENV_VAR} or create the file from config.example.json"
         )
 
 
