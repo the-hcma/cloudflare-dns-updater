@@ -1,0 +1,10 @@
+{
+  "cloudflare_api_token": "your-cloudflare-api-token",
+  "zone": "example.com",
+  "dns_entries": [
+    "example.com",
+    "home.example.com"
+  ],
+  "record_ttl": 120,
+  "ipv6_enabled": true
+}

@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+    branches-ignore:
+      - '**/graphite-base/**'
+  schedule:
+    - cron: '0 7 * * 4'
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    name: Guard
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.set-skip.outputs.skip }}
+    steps:
+      - id: pr-state
+        uses: nick-fields/retry@v4
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        with:
+          timeout_seconds: 15
+          max_attempts: 3
+          retry_wait_seconds: 5
+          command: |
+            if [[ -z "$PR_NUMBER" ]]; then exit 0; fi
+            state=$(gh pr view "$PR_NUMBER" --repo "$REPOSITORY" --json state -q .state)
+            echo "state=$state" >> "$GITHUB_OUTPUT"
+
+      - id: set-skip
+        env:
+          HEAD_REF: ${{ github.head_ref || github.ref_name }}
+          PR_STATE: ${{ steps.pr-state.outputs.state }}
+        run: |
+          if [[ "$HEAD_REF" == gtmq_merge_* ]] || [[ "$PR_STATE" == "MERGED" ]]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  ruff:
+    name: Ruff
+    needs: guard
+    if: needs.guard.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: latest
+      - name: Ruff
+        run: bash .github/ci/ruff
+
+  mypy:
+    name: Mypy
+    needs: guard
+    if: needs.guard.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: latest
+      - name: Mypy
+        run: bash .github/ci/mypy
+
+  test:
+    name: Pytest (hermetic)
+    needs: guard
+    if: needs.guard.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: astral-sh/setup-uv@v7
+        with:
+          version: latest
+      - name: Pytest (hermetic)
+        run: bash .github/ci/pytest-hermetic
+
+  workflow-lint:
+    name: Workflow Lint (actionlint)
+    needs: guard
+    if: needs.guard.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Install actionlint
+        run: |
+          curl -sSL https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash | bash
+          sudo mv actionlint /usr/local/bin/
+      - name: Workflow Lint
+        run: bash .github/ci/workflow-lint
+
+  secret-scan:
+    name: Secret Scan
+    needs: guard
+    if: needs.guard.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Secret Scan
+        env:
+          GITLEAKS_BASE: ${{ github.event.pull_request.base.sha || '' }}
+          GITLEAKS_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: bash .github/ci/secret-scan
