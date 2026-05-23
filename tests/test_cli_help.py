@@ -55,6 +55,12 @@ def test_help_lists_expected_options() -> None:
         assert flag in text
 
 
+def test_help_includes_exit_status_codes() -> None:
+    text = _help_text()
+    assert "exit status:" in text
+    assert "2 — configuration or execution failure" in text
+
+
 def test_help_includes_version_and_commit() -> None:
     text = _help_text()
     assert re.search(r"version: \S+ \([0-9a-f]{7,12}|unknown\)", text), text

@@ -13,6 +13,7 @@ import netifaces
 import requests
 
 from dns_updater.config import IpDiscoverySettings, load_config
+from dns_updater.exit_codes import EXIT_FAILURE
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -294,5 +295,5 @@ def print_external_ipv6() -> None:
     """Print external IPv6 for shell wrappers (replaces external_ipv6_address_retriever)."""
     address, _source = discover_ipv6(load_config().ip_discovery)
     if address is None:
-        raise SystemExit(1)
+        raise SystemExit(EXIT_FAILURE)
     print(address)
