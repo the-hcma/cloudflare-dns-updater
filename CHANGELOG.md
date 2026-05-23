@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.2.0...v0.2.1) (2026-05-23)
+
+
+### Bug Fixes
+
+* quiet missing-config errors and write starter config ([#12](https://github.com/the-hcma/cloudflare-dns-updater/issues/12)) ([4c91172](https://github.com/the-hcma/cloudflare-dns-updater/commit/4c9117241bfddbae1053c618e96d0e204298caba))
+* run release-please PR checks in parallel ([#10](https://github.com/the-hcma/cloudflare-dns-updater/issues/10)) ([8b516df](https://github.com/the-hcma/cloudflare-dns-updater/commit/8b516df935bf483b8be7567627089f6e6ccfebb2))
+
 ## [0.2.0](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.1.0...v0.2.0) (2026-05-23)
 
 
