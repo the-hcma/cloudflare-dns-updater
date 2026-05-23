@@ -52,16 +52,46 @@ cloudflare-dns-updater          # update DNS when IPv4 or IPv6 changed
 
 Create a Cloudflare API token at https://dash.cloudflare.com/profile/api-tokens with permission to edit DNS records for your zone.
 
+**Before scheduling:** run a dry-run and confirm exit code `0` or `1`. If config is missing, the tool may write a starter file but still exits with code `2` until you replace the placeholder token and zone settings.
+
 ### Run on a schedule (cron)
 
-After pipx install and config are in place:
+Cron runs with a minimal environment: set **`HOME`** (and usually **`PATH`**) so the tool finds `~/.config/cloudflare-dns-updater/config.json` and your pipx-installed binary. Create and edit config **before** enabling the job — do not rely on the auto-created starter file in production.
+
+#### Exit codes
+
+| Code | Meaning |
+|------|---------|
+| `0` | No update needed (addresses unchanged). |
+| `1` | Success — DNS records were updated (or dry-run completed). |
+| `2` | **Hard failure** — missing/invalid config, discovery error, Cloudflare API error, etc. |
+
+Exit `1` is a successful run that changed DNS; exit `2` is what you should alert on.
+
+#### Logging and alerts
+
+Cron sends mail when a job writes to **stdout or stderr**, not merely when the exit code is non-zero. Redirecting all output to a log file (`>>/tmp/...log 2>&1`) therefore **suppresses cron mail**, even when the tool fails.
+
+**Recommended — log to a file, mail only on hard failure (exit `2`):**
 
 ```cron
-# every 5 minutes
-*/5 * * * * /home/you/.local/bin/cloudflare-dns-updater >>/tmp/cloudflare-dns-updater.log 2>&1
+PATH=/usr/bin:/bin
+HOME=/home/you
+*/5 * * * * /home/you/.local/bin/cloudflare-dns-updater >>/tmp/cloudflare-dns-updater.log 2>&1; r=$?; if [ "$r" -eq 2 ]; then echo "cloudflare-dns-updater failed (exit $r); see /tmp/cloudflare-dns-updater.log" >&2; fi
 ```
 
-Use `-f` if you want to recheck Cloudflare even when local state files show no change.
+The final `echo` runs only when exit code is `2`, writing to stderr so cron can mail you without spamming on every successful DNS update (exit `1`).
+
+**Alternative — no log file, mail on any non-zero exit** (includes exit `1` when records were updated):
+
+```cron
+HOME=/home/you
+*/5 * * * * /usr/bin/chronic /home/you/.local/bin/cloudflare-dns-updater
+```
+
+Do **not** wrap `chronic` with `>>log 2>&1` — that captures chronic's failure output into the log and cron will not mail you.
+
+Use `-f` if you want to recheck Cloudflare even when local state files show no change. For non-standard home paths or multiple configs, pass `-c /full/path/to/config.json` explicitly.
 
 ## Configuration
 
@@ -93,7 +123,7 @@ Copy from **`config.example.json`**:
 | `ipv6_enabled` | No | Set `false` to skip AAAA updates (default `true`). |
 | `nest_router_url` | No | Nest / Google Wifi base URL. Omitted = `http://<LAN>.1` from your default route. Set `null` to skip Nest. |
 
-`CLOUDFLARE_API_TOKEN` in the environment overrides only the token field in the file.
+`CLOUDFLARE_API_TOKEN` in the environment overrides only the token field in the file. In cron, set `HOME` (and optionally `CLOUDFLARE_API_TOKEN`) in the crontab — cron does not load your shell profile.
 
 ## IP discovery
 
@@ -117,6 +147,8 @@ cloudflare-dns-updater -c /path/to/config.json
 ```
 
 Run `cloudflare-dns-updater -h` for full option descriptions.
+
+Exit codes: `0` no update needed, `1` records updated (success), `2` configuration or execution failure. See [Run on a schedule (cron)](#run-on-a-schedule-cron) for alerting patterns.
 
 State is stored under `~/.local/state/cloudflare-dns-updater/` (override with `XDG_STATE_HOME`).
 

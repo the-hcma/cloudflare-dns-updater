@@ -11,6 +11,7 @@ from pathlib import Path
 from dns_updater.build_info import format_cli_version_line, format_help_version_line
 from dns_updater.cloudflare_dns import update_dns_entries
 from dns_updater.config import ConfigNotFoundError
+from dns_updater.exit_codes import EXIT_FAILURE, EXIT_OK, EXIT_UPDATED
 from dns_updater.ip import load_external_addresses, persist_external_addresses
 from dns_updater.terminal import (
     ColoredHelpFormatter,
@@ -44,7 +45,10 @@ examples:
   %(prog)s -d              dry-run: show planned DNS changes only
   %(prog)s -v -d           verbose dry-run with discovery details
 
-exit status: 0 if no update was needed, 1 if records were updated or dry-run completed
+exit status:
+    0 — no update was needed
+    1 — records were updated or dry-run completed (success)
+    2 — configuration or execution failure (alert on this in cron jobs)
 
 colors are enabled on terminals; set NO_COLOR=1 or pass --no-color to disable
 """
@@ -79,7 +83,7 @@ def run(
         print_address_line("IPv6", addresses.ipv6, addresses.ipv6_source)
 
     if not force and not addresses.changed:
-        return 0
+        return EXIT_OK
 
     if force and not addresses.changed:
         _LOGGER.info(
@@ -100,11 +104,11 @@ def run(
             config_path=config_path,
             dry_run=True,
         )
-        return 1
+        return EXIT_UPDATED
 
     persist_external_addresses(addresses)
     update_dns_entries(addresses.ipv4, addresses.ipv6, config_path=config_path)
-    return 1
+    return EXIT_UPDATED
 
 
 def main() -> None:
@@ -176,15 +180,15 @@ def main() -> None:
     except KeyboardInterrupt:
         print("\n")
         print_error("interrupted")
-        raise SystemExit(1) from None
+        raise SystemExit(EXIT_FAILURE) from None
     except ConfigNotFoundError as exception:
         print_error(str(exception))
-        raise SystemExit(1) from None
+        raise SystemExit(EXIT_FAILURE) from None
     except Exception as exception:
         if args.verbose:
             traceback.print_exc(file=sys.stderr)
         print_error(str(exception) if args.verbose else f"execution failed: {exception}")
-        raise SystemExit(1) from None
+        raise SystemExit(EXIT_FAILURE) from None
 
 
 if __name__ == "__main__":

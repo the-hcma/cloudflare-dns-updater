@@ -5,6 +5,7 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 from dns_updater.cli import run
+from dns_updater.exit_codes import EXIT_OK, EXIT_UPDATED
 from dns_updater.ip import ExternalAddresses
 
 
@@ -24,7 +25,7 @@ def test_run_skips_when_unchanged(
         previous_ipv4="1.2.3.4",
         previous_ipv6=None,
     )
-    assert run(force=False) == 0
+    assert run(force=False) == EXIT_OK
     mock_persist.assert_not_called()
     mock_update.assert_not_called()
 
@@ -45,7 +46,7 @@ def test_run_updates_when_forced(
         previous_ipv4="1.2.3.4",
         previous_ipv6="2001:db8::1",
     )
-    assert run(force=True) == 1
+    assert run(force=True) == EXIT_UPDATED
     mock_persist.assert_called_once()
     mock_update.assert_called_once_with("1.2.3.4", "2001:db8::1", config_path=None)
 
@@ -66,7 +67,7 @@ def test_run_dry_run_skips_persist_and_calls_update_with_dry_run(
         previous_ipv4="1.2.3.4",
         previous_ipv6=None,
     )
-    assert run(force=True, dry_run=True) == 1
+    assert run(force=True, dry_run=True) == EXIT_UPDATED
     mock_persist.assert_not_called()
     mock_update.assert_called_once_with(
         "1.2.3.4",
@@ -92,6 +93,6 @@ def test_run_dry_run_skips_when_unchanged_without_force(
         previous_ipv4="1.2.3.4",
         previous_ipv6=None,
     )
-    assert run(dry_run=True) == 0
+    assert run(dry_run=True) == EXIT_OK
     mock_persist.assert_not_called()
     mock_update.assert_not_called()
