@@ -82,7 +82,9 @@ jobs:
             -q .headRefOid)
           echo "head_sha=${head_sha}" >>"$GITHUB_OUTPUT"
 
-  ci:
+  # GITHUB_TOKEN pushes from release-please do not fire pull_request; publish the same
+  # check context names as ci.yml so branch protection can pass on the release PR.
+  release-pr-checks:
     needs: [release-please, resolve-release-pr]
     if: >-
       always() &&
@@ -92,57 +94,52 @@ jobs:
     permissions:
       checks: write
       contents: read
+    env:
+      HEAD_SHA: ${{ needs.resolve-release-pr.outputs.head_sha }}
     steps:
-      - name: Start ci check
-        id: check
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          check_id=$(gh api "repos/${{ github.repository }}/check-runs" \
-            --method POST \
-            -f name=ci \
-            -f head_sha="${{ needs.resolve-release-pr.outputs.head_sha }}" \
-            -f status=in_progress \
-            -f started_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-            --jq .id)
-          echo "id=${check_id}" >>"$GITHUB_OUTPUT"
-
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.resolve-release-pr.outputs.head_sha }}
+          ref: ${{ env.HEAD_SHA }}
 
       - uses: astral-sh/setup-uv@v7
 
-      - name: Ruff
-        id: ruff
-        run: bash .github/ci/ruff
-
-      - name: Mypy
-        id: mypy
-        run: bash .github/ci/mypy
-
-      - name: Pytest (hermetic)
-        id: pytest
-        run: bash .github/ci/pytest-hermetic
-
-      - name: Complete ci check
-        if: always()
+      - name: Ruff, Mypy, Pytest (hermetic)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          conclusion=success
-          if [[ "${{ steps.ruff.outcome }}" != "success" ]] \
-            || [[ "${{ steps.mypy.outcome }}" != "success" ]] \
-            || [[ "${{ steps.pytest.outcome }}" != "success" ]]; then
-            conclusion=failure
-          fi
-          gh api "repos/${{ github.repository }}/check-runs/${{ steps.check.outputs.id }}" \
-            --method PATCH \
-            -f status=completed \
-            -f conclusion="$conclusion" \
-            -f completed_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          run_required_check() {
+            local name="$1"
+            shift
+            local check_id conclusion started completed
+            started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            check_id="$(gh api "repos/${GITHUB_REPOSITORY}/check-runs" \
+              --method POST \
+              -f name="${name}" \
+              -f head_sha="${HEAD_SHA}" \
+              -f status=in_progress \
+              -f started_at="${started}" \
+              --jq .id)"
+            if "$@"; then
+              conclusion=success
+            else
+              conclusion=failure
+            fi
+            completed="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            gh api "repos/${GITHUB_REPOSITORY}/check-runs/${check_id}" \
+              --method PATCH \
+              -f status=completed \
+              -f conclusion="${conclusion}" \
+              -f completed_at="${completed}"
+            [[ "${conclusion}" == success ]]
+          }
+
+          failed=0
+          run_required_check "Ruff" bash .github/ci/ruff || failed=1
+          run_required_check "Mypy" bash .github/ci/mypy || failed=1
+          run_required_check "Pytest (hermetic)" bash .github/ci/pytest-hermetic || failed=1
+          exit "${failed}"
 
   publish-pypi:
     needs: release-please
