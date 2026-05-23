@@ -60,10 +60,13 @@ def _description() -> str:
 
 def _configure_logging(*, verbose: bool) -> None:
     configure_root_logging()
-    level = logging.INFO if verbose else logging.WARNING
+    outcome_loggers = {"dns_updater", "dns_updater.cloudflare_dns"}
     for logger_name in _LOGGERS_VERBOSE:
         logger = logging.getLogger(logger_name)
-        logger.setLevel(level)
+        if logger_name in outcome_loggers:
+            logger.setLevel(logging.INFO)
+        else:
+            logger.setLevel(logging.INFO if verbose else logging.WARNING)
         if verbose and logger_name == "dns_updater.config":
             logger.setLevel(logging.DEBUG)
 
@@ -83,7 +86,21 @@ def run(
         print_address_line("IPv6", addresses.ipv6, addresses.ipv6_source)
 
     if not force and not addresses.changed:
+        _LOGGER.info(
+            "external addresses unchanged (IPv4=%s, IPv6=%s); skipping Cloudflare update",
+            addresses.ipv4,
+            addresses.ipv6 or "none",
+        )
         return EXIT_OK
+
+    if addresses.changed:
+        _LOGGER.warning(
+            "external addresses changed (IPv4: %s -> %s, IPv6: %s -> %s); updating Cloudflare",
+            addresses.previous_ipv4 or "none",
+            addresses.ipv4,
+            addresses.previous_ipv6 or "none",
+            addresses.ipv6 or "none",
+        )
 
     if force and not addresses.changed:
         _LOGGER.info(

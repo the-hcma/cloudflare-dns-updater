@@ -59,7 +59,7 @@ def _upsert_a_record(
         msg = f"missing DNS record id for A {name}"
         raise RuntimeError(msg)
     if record_content == content:
-        _LOGGER.info("Cloudflare A %s already set to %s", name, content)
+        _LOGGER.debug("Cloudflare A %s already set to %s", name, content)
         return False
     client.dns.records.update(
         dns_record_id=record_id,
@@ -97,7 +97,7 @@ def _upsert_aaaa_record(
         msg = f"missing DNS record id for AAAA {name}"
         raise RuntimeError(msg)
     if record_content == content:
-        _LOGGER.info("Cloudflare AAAA %s already set to %s", name, content)
+        _LOGGER.debug("Cloudflare AAAA %s already set to %s", name, content)
         return False
     client.dns.records.update(
         dns_record_id=record_id,

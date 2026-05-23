@@ -107,7 +107,6 @@ def test_update_dns_entries_logs_when_cloudflare_already_correct(
     with caplog.at_level("INFO", logger="dns_updater.cloudflare_dns"):
         update_dns_entries("203.0.113.2", None, config=config)
 
-    assert "already set to" in caplog.text
     assert "all 1 record(s) already match" in caplog.text
 
 
