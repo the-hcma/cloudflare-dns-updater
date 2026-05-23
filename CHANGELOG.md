@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.0](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.1.0...v0.2.0) (2026-05-23)
+
+
+### Features
+
+* show version and commit in --help and --version ([#7](https://github.com/the-hcma/cloudflare-dns-updater/issues/7)) ([99204a7](https://github.com/the-hcma/cloudflare-dns-updater/commit/99204a7767bdc2746ffe90ef0c48b40cec00353b))
+
+
+### Bug Fixes
+
+* publish required CI checks on release-please PRs ([#9](https://github.com/the-hcma/cloudflare-dns-updater/issues/9)) ([cfe0f61](https://github.com/the-hcma/cloudflare-dns-updater/commit/cfe0f611d82efa1420cd32ece1cb7b5152c2595c))
+
+
+### Documentation
+
+* clarify PyPI trusted publisher setup ([#5](https://github.com/the-hcma/cloudflare-dns-updater/issues/5)) ([d019da8](https://github.com/the-hcma/cloudflare-dns-updater/commit/d019da8eeeee917b2aab77a18e65d186dd3c1a53))
+* README badges and version in help description ([#8](https://github.com/the-hcma/cloudflare-dns-updater/issues/8)) ([38ef1ad](https://github.com/the-hcma/cloudflare-dns-updater/commit/38ef1ad21bd7589730925c5cfe2a1d83bca46bfe))
+
 ## 0.1.0 (2026-05-23)
 
 
