@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import ipaddress
 import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from subprocess import CompletedProcess, run
 from typing import Final
 
+import netifaces
 import requests
 
 from dns_updater.config import IpDiscoverySettings, load_config
@@ -20,10 +21,6 @@ _IPV4_STATE_FILE = str(_STATE_DIR / "ipv4")
 _IPV6_STATE_FILE = str(_STATE_DIR / "ipv6")
 _NEST_STATUS_PATH: Final = "/api/v1/status"
 _IPV4_FALLBACK_URLS: Final = ("https://checkip.amazonaws.com",)
-_IPV6_DISCOVERY_URLS: Final = (
-    "https://api6.ipify.org",
-    "https://ipv6.icanhazip.com",
-)
 
 
 @dataclass(frozen=True)
@@ -42,6 +39,16 @@ class ExternalAddresses:
         if self.previous_ipv4 != self.ipv4:
             return True
         return self.previous_ipv6 != self.ipv6
+
+
+@dataclass(frozen=True)
+class HostIpv6Candidate:
+    """A globally addressable IPv6 assigned to a local network interface."""
+
+    address: str
+    interface: str
+    temporary: bool = False
+    deprecated: bool = False
 
 
 def _read_state_file(path: str) -> str | None:
@@ -63,6 +70,68 @@ def _nest_status_url(nest_router_url: str) -> str:
     return f"{nest_router_url.rstrip('/')}{_NEST_STATUS_PATH}"
 
 
+def _ipv6_candidate(
+    raw: str,
+    interface: str,
+    *,
+    temporary: bool,
+    deprecated: bool,
+) -> HostIpv6Candidate | None:
+    host = raw.split("%", 1)[0]
+    try:
+        parsed = ipaddress.IPv6Address(host)
+    except ValueError:
+        return None
+    if not parsed.is_global:
+        return None
+    return HostIpv6Candidate(
+        address=str(parsed),
+        interface=interface,
+        temporary=temporary,
+        deprecated=deprecated,
+    )
+
+
+def _collect_host_global_ipv6_candidates() -> list[HostIpv6Candidate]:
+    candidates: list[HostIpv6Candidate] = []
+    for interface in netifaces.interfaces():
+        try:
+            addresses = netifaces.ifaddresses(interface)
+        except (OSError, ValueError) as error:
+            _LOGGER.debug("netifaces.ifaddresses(%s) failed (%s)", interface, error)
+            continue
+        for entry in addresses.get(netifaces.AF_INET6, []):
+            if not isinstance(entry, dict):
+                continue
+            raw = entry.get("addr")
+            if not isinstance(raw, str):
+                continue
+            candidate = _ipv6_candidate(
+                raw,
+                interface,
+                temporary=False,
+                deprecated=False,
+            )
+            if candidate is not None:
+                candidates.append(candidate)
+    return candidates
+
+
+def _select_preferred_global_ipv6(candidates: list[HostIpv6Candidate]) -> HostIpv6Candidate | None:
+    if not candidates:
+        return None
+
+    def rank(candidate: HostIpv6Candidate) -> tuple[int, str]:
+        score = 0
+        if candidate.temporary:
+            score += 2
+        if candidate.deprecated:
+            score += 1
+        return score, candidate.address
+
+    return min(candidates, key=rank)
+
+
 def collect_ipv4_discovery_sources(nest_router_url: str | None) -> dict[str, str]:
     """Query every IPv4 source and return successful results keyed by source name."""
     sources: dict[str, str] = {}
@@ -78,12 +147,11 @@ def collect_ipv4_discovery_sources(nest_router_url: str | None) -> dict[str, str
 
 
 def collect_ipv6_discovery_sources() -> dict[str, str]:
-    """Query every IPv6 URL and return successful results keyed by URL."""
+    """Return globally addressable IPv6 addresses keyed by interface name."""
     sources: dict[str, str] = {}
-    for url in _IPV6_DISCOVERY_URLS:
-        address = _fetch_url(url, force_ipv6=True)
-        if address and ":" in address:
-            sources[url] = address
+    for candidate in _collect_host_global_ipv6_candidates():
+        key = candidate.interface or candidate.address
+        sources[key] = candidate.address
     return sources
 
 
@@ -104,15 +172,15 @@ def validate_discovery_consistency(
     *,
     ipv6_enabled: bool = True,
 ) -> tuple[str, str | None]:
-    """Validate Nest/fallback IPv4 and IPv6 URL sources agree; return the shared addresses."""
+    """Validate Nest/fallback IPv4 sources agree; return IPv4 and preferred host IPv6."""
     ipv4_sources = collect_ipv4_discovery_sources(nest_router_url)
     ipv4_address = assert_sources_agree(ipv4_sources, "IPv4")
 
     ipv6_address: str | None = None
     if ipv6_enabled:
-        ipv6_sources = collect_ipv6_discovery_sources()
-        if ipv6_sources:
-            ipv6_address = assert_sources_agree(ipv6_sources, "IPv6")
+        selected = _select_preferred_global_ipv6(_collect_host_global_ipv6_candidates())
+        if selected is not None:
+            ipv6_address = selected.address
     return ipv4_address, ipv6_address
 
 
@@ -138,25 +206,7 @@ def discover_ipv4_from_nest(nest_router_url: str) -> str | None:
     return None
 
 
-def _fetch_url(url: str, *, force_ipv6: bool = False) -> str | None:
-    if force_ipv6:
-        try:
-            curl: CompletedProcess[str] = run(
-                ("/usr/bin/curl", "-6", "-fsS", "--max-time", "30", url),
-                capture_output=True,
-                check=True,
-                text=True,
-                timeout=35,
-            )
-            address = curl.stdout.strip()
-            if ":" in address:
-                return address
-        except OSError as error:
-            _LOGGER.debug("curl -6 failed for %s (%s)", url, error)
-        except Exception:
-            _LOGGER.debug("curl -6 failed for %s", url, exc_info=True)
-        return None
-
+def _fetch_url(url: str) -> str | None:
     try:
         response = requests.get(url, timeout=30)
         response.raise_for_status()
@@ -193,28 +243,21 @@ def discover_ipv4(discovery: IpDiscoverySettings) -> tuple[str, str]:
 
 
 def discover_ipv6(discovery: IpDiscoverySettings) -> tuple[str | None, str | None]:
-    """Return external IPv6 and its source (Nest status does not expose WAN IPv6)."""
+    """Return the host's preferred globally addressable IPv6 and its source."""
     if not discovery.ipv6_enabled:
         _LOGGER.info("IPv6 discovery disabled in configuration")
         return None, None
 
-    for url in _IPV6_DISCOVERY_URLS:
-        address = _fetch_url(url, force_ipv6=True)
-        if address and ":" in address:
-            source = f"HTTP curl -6 ({url})"
-            _log_discovered_address("IPv6", address, source)
-            return address, source
-        address = _fetch_url(url)
-        if address and ":" in address:
-            source = f"HTTP ({url})"
-            _log_discovered_address("IPv6", address, source)
-            return address, source
+    selected = _select_preferred_global_ipv6(_collect_host_global_ipv6_candidates())
+    if selected is None:
+        _LOGGER.info(
+            "no globally addressable IPv6 on this host (set ipv6_enabled to false in config.json to skip AAAA updates)"
+        )
+        return None, None
 
-    _LOGGER.info(
-        "no external IPv6 address available (host may lack IPv6 connectivity; "
-        "set ipv6_enabled to false in config.json to skip AAAA updates)"
-    )
-    return None, None
+    source = f"host interface ({selected.interface or 'unknown'})"
+    _log_discovered_address("IPv6", selected.address, source)
+    return selected.address, source
 
 
 def load_external_addresses(*, config_path: Path | None = None) -> ExternalAddresses:
