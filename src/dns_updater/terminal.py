@@ -96,9 +96,7 @@ class TerminalFormatter(logging.Formatter):
             return style(message, "magenta")
         if level == "WARNING" and ("registered " in message or "updated " in message):
             return style(message, "green")
-        if level == "INFO" and message.startswith("Cloudflare A ") and " already set to " in message:
-            return style(message, "dim")
-        if level == "WARNING" and (
+        if level == "INFO" and (
             message.startswith("Cloudflare: all ") or "unchanged" in message and "skipping Cloudflare update" in message
         ):
             return style(message, "dim")

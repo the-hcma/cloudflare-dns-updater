@@ -28,12 +28,37 @@ def test_run_skips_when_unchanged(
         previous_ipv4="1.2.3.4",
         previous_ipv6=None,
     )
-    with caplog.at_level("WARNING", logger="dns_updater"):
+    with caplog.at_level("INFO", logger="dns_updater"):
         assert run(force=False) == EXIT_OK
     mock_persist.assert_not_called()
     mock_update.assert_not_called()
     assert "external addresses unchanged" in caplog.text
     assert "skipping Cloudflare update" in caplog.text
+
+
+@patch("dns_updater.cli.update_dns_entries")
+@patch("dns_updater.cli.persist_external_addresses")
+@patch("dns_updater.cli.load_external_addresses")
+def test_run_updates_when_addresses_changed(
+    mock_load: MagicMock,
+    mock_persist: MagicMock,
+    mock_update: MagicMock,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    mock_load.return_value = ExternalAddresses(
+        ipv4="5.6.7.8",
+        ipv4_source="HTTP (https://checkip.amazonaws.com)",
+        ipv6=None,
+        ipv6_source=None,
+        previous_ipv4="1.2.3.4",
+        previous_ipv6=None,
+    )
+    with caplog.at_level("WARNING", logger="dns_updater"):
+        assert run(force=False) == EXIT_UPDATED
+    mock_persist.assert_called_once()
+    mock_update.assert_called_once_with("5.6.7.8", None, config_path=None)
+    assert "external addresses changed" in caplog.text
+    assert "1.2.3.4 -> 5.6.7.8" in caplog.text
 
 
 @patch("dns_updater.cli.update_dns_entries")
