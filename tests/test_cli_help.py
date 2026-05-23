@@ -40,8 +40,39 @@ def test_help_option_descriptions_align() -> None:
 
 def test_help_lists_expected_options() -> None:
     text = _help_text()
-    for flag in ("--no-color", "-f", "--force", "-d", "--dry-run", "-v", "--verbose", "-c", "--config"):
+    for flag in (
+        "--version",
+        "--no-color",
+        "-f",
+        "--force",
+        "-d",
+        "--dry-run",
+        "-v",
+        "--verbose",
+        "-c",
+        "--config",
+    ):
         assert flag in text
+
+
+def test_help_includes_version_and_commit() -> None:
+    text = _help_text()
+    assert re.search(r"version: \S+ \([0-9a-f]{7,12}|unknown\)", text), text
+
+
+def test_version_flag() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "dns_updater.cli", "--version"],
+        capture_output=True,
+        text=True,
+        check=True,
+        cwd=Path(__file__).resolve().parents[1],
+        env={**os.environ, "NO_COLOR": "1"},
+    )
+    assert re.match(
+        r"^cloudflare-dns-updater \S+ \([0-9a-f]{7,12}|unknown\)\n$",
+        result.stdout,
+    ), result.stdout
 
 
 def test_help_uses_colors_when_enabled(monkeypatch: pytest.MonkeyPatch) -> None:

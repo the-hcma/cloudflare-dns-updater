@@ -8,6 +8,7 @@ import sys
 import traceback
 from pathlib import Path
 
+from dns_updater.build_info import format_cli_version_line, format_help_version_line
 from dns_updater.cloudflare_dns import update_dns_entries
 from dns_updater.ip import load_external_addresses, persist_external_addresses
 from dns_updater.terminal import (
@@ -46,6 +47,10 @@ exit status: 0 if no update was needed, 1 if records were updated or dry-run com
 
 colors are enabled on terminals; set NO_COLOR=1 or pass --no-color to disable
 """
+
+
+def _epilog() -> str:
+    return f"{format_help_version_line()}\n\n{_EPILOG}"
 
 
 def _configure_logging(*, verbose: bool) -> None:
@@ -106,8 +111,14 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="cloudflare-dns-updater",
         description=_DESCRIPTION,
-        epilog=_EPILOG,
+        epilog=_epilog(),
         formatter_class=ColoredHelpFormatter,
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=format_cli_version_line(prog="cloudflare-dns-updater"),
+        help="show version and source commit, then exit",
     )
     parser.add_argument(
         "--no-color",
