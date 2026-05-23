@@ -45,6 +45,7 @@ def test_run_skips_when_mock_external_ips_unchanged(
     mock_update.assert_not_called()
 
 
+@patch("dns_updater.ip.load_config")
 @patch("dns_updater.cli.update_dns_entries")
 @patch("dns_updater.cli.persist_external_addresses")
 @patch("dns_updater.ip.discover_ipv6")
@@ -56,8 +57,12 @@ def test_run_discovers_mock_ipv4_only(
     mock_discover_v6: MagicMock,
     mock_persist: MagicMock,
     mock_update: MagicMock,
+    mock_load_config: MagicMock,
     mock_external_ips: MockExternalIps,
 ) -> None:
+    from helpers import sample_config
+
+    mock_load_config.return_value = sample_config()
     mock_discover_v4.return_value = (mock_external_ips.ipv4, "mock-ipv4")
     mock_discover_v6.return_value = (None, None)
     from dns_updater.ip import load_external_addresses
@@ -68,6 +73,7 @@ def test_run_discovers_mock_ipv4_only(
     assert addresses.changed is True
 
 
+@patch("dns_updater.ip.load_config")
 @patch("dns_updater.cli.update_dns_entries")
 @patch("dns_updater.cli.persist_external_addresses")
 @patch("dns_updater.ip.discover_ipv6")
@@ -79,8 +85,12 @@ def test_run_discovers_mock_ipv4_and_ipv6(
     mock_discover_v6: MagicMock,
     mock_persist: MagicMock,
     mock_update: MagicMock,
+    mock_load_config: MagicMock,
     mock_external_ips: MockExternalIps,
 ) -> None:
+    from helpers import sample_config
+
+    mock_load_config.return_value = sample_config()
     mock_discover_v4.return_value = (mock_external_ips.ipv4, "mock-ipv4")
     mock_discover_v6.return_value = (mock_external_ips.ipv6, "mock-ipv6")
     mock_read.side_effect = [mock_external_ips.previous_ipv4, mock_external_ips.previous_ipv6]
