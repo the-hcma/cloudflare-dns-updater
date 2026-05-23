@@ -41,7 +41,7 @@ def test_run_updates_when_forced(
         ipv4="1.2.3.4",
         ipv4_source="HTTP (https://checkip.amazonaws.com)",
         ipv6="2001:db8::1",
-        ipv6_source="HTTP curl -6 (https://api6.ipify.org)",
+        ipv6_source="host interface (en0)",
         previous_ipv4="1.2.3.4",
         previous_ipv6="2001:db8::1",
     )

@@ -104,10 +104,7 @@ Copy from **`config.example.json`**:
 
 ### IPv6
 
-The Nest status API does not expose WAN IPv6. When `ipv6_enabled` is true:
-
-1. `https://api6.ipify.org` (via `curl -6`)
-2. `https://ipv6.icanhazip.com`
+When `ipv6_enabled` is true, the tool reads globally addressable IPv6 addresses from local network interfaces via [netifaces](https://pypi.org/project/netifaces/).
 
 ## Usage
 

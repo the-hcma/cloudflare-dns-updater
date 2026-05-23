@@ -7,7 +7,6 @@ import pytest
 from dns_updater.config import IpDiscoverySettings, load_config
 from dns_updater.ip import (
     _IPV4_FALLBACK_URLS,
-    _IPV6_DISCOVERY_URLS,
     assert_sources_agree,
     collect_ipv4_discovery_sources,
     collect_ipv6_discovery_sources,
@@ -53,16 +52,20 @@ def test_ipv4_nest_and_fallback_urls_report_same_address() -> None:
 
 
 @pytest.mark.integration
-def test_ipv6_fallback_urls_report_same_address() -> None:
-    """All configured IPv6 echo services must return the same address."""
-    sources = collect_ipv6_discovery_sources()
-    if len(sources) < 2:
-        pytest.skip(f"need at least two IPv6 sources; got {sources!r}")
+def test_host_global_ipv6_discovery_matches_discover_ipv6() -> None:
+    """Preferred host IPv6 must match discover_ipv6 when global addresses exist."""
+    discovery = load_config().ip_discovery
+    if not discovery.ipv6_enabled:
+        pytest.skip("IPv6 discovery disabled in config")
 
-    agreed = assert_sources_agree(sources, "IPv6")
-    for url in _IPV6_DISCOVERY_URLS:
-        if url in sources:
-            assert sources[url] == agreed
+    sources = collect_ipv6_discovery_sources()
+    if not sources:
+        pytest.skip("no globally addressable IPv6 on this host")
+
+    ipv6_address, ipv6_source = discover_ipv6(discovery)
+    assert ipv6_address is not None
+    assert ipv6_address in sources.values()
+    assert ipv6_source.startswith("host interface (")
 
 
 @pytest.mark.integration

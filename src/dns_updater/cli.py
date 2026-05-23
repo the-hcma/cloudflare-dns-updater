@@ -33,7 +33,7 @@ _LOGGERS_VERBOSE: tuple[str, ...] = (
 _DESCRIPTION = """\
 Update Cloudflare A and AAAA records when your external IP address changes.
 
-Discovers the current WAN IPv4 (Nest WiFi or HTTP fallback) and optional IPv6,
+Discovers the current WAN IPv4 (Nest WiFi or HTTP fallback) and optional host IPv6,
 then creates or updates DNS records defined in config.json.
 """
 
