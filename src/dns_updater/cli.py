@@ -49,8 +49,8 @@ colors are enabled on terminals; set NO_COLOR=1 or pass --no-color to disable
 """
 
 
-def _epilog() -> str:
-    return f"{format_help_version_line()}\n\n{_EPILOG}"
+def _description() -> str:
+    return f"{format_help_version_line()}\n\n{_DESCRIPTION}"
 
 
 def _configure_logging(*, verbose: bool) -> None:
@@ -110,8 +110,8 @@ def main() -> None:
     """Parse arguments and run the updater."""
     parser = argparse.ArgumentParser(
         prog="cloudflare-dns-updater",
-        description=_DESCRIPTION,
-        epilog=_epilog(),
+        description=_description(),
+        epilog=_EPILOG,
         formatter_class=ColoredHelpFormatter,
     )
     parser.add_argument(

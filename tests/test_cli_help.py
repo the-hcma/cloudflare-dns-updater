@@ -58,6 +58,10 @@ def test_help_lists_expected_options() -> None:
 def test_help_includes_version_and_commit() -> None:
     text = _help_text()
     assert re.search(r"version: \S+ \([0-9a-f]{7,12}|unknown\)", text), text
+    # version appears in the description block (before options), not only in epilog
+    options_index = text.index("options:")
+    version_index = text.index("version:")
+    assert version_index < options_index
 
 
 def test_version_flag() -> None:
