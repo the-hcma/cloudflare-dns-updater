@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from cloudflare_dns_updater.cli import run
-from cloudflare_dns_updater.ip import ExternalAddresses
+from dns_updater.cli import run
+from dns_updater.ip import ExternalAddresses
 
 
-@patch("cloudflare_dns_updater.cli.update_dns_entries")
-@patch("cloudflare_dns_updater.cli.persist_external_addresses")
-@patch("cloudflare_dns_updater.cli.load_external_addresses")
+@patch("dns_updater.cli.update_dns_entries")
+@patch("dns_updater.cli.persist_external_addresses")
+@patch("dns_updater.cli.load_external_addresses")
 def test_run_skips_when_unchanged(
     mock_load: MagicMock,
     mock_persist: MagicMock,
@@ -29,9 +29,9 @@ def test_run_skips_when_unchanged(
     mock_update.assert_not_called()
 
 
-@patch("cloudflare_dns_updater.cli.update_dns_entries")
-@patch("cloudflare_dns_updater.cli.persist_external_addresses")
-@patch("cloudflare_dns_updater.cli.load_external_addresses")
+@patch("dns_updater.cli.update_dns_entries")
+@patch("dns_updater.cli.persist_external_addresses")
+@patch("dns_updater.cli.load_external_addresses")
 def test_run_updates_when_forced(
     mock_load: MagicMock,
     mock_persist: MagicMock,
@@ -50,9 +50,9 @@ def test_run_updates_when_forced(
     mock_update.assert_called_once_with("1.2.3.4", "2001:db8::1", config_path=None)
 
 
-@patch("cloudflare_dns_updater.cli.update_dns_entries")
-@patch("cloudflare_dns_updater.cli.persist_external_addresses")
-@patch("cloudflare_dns_updater.cli.load_external_addresses")
+@patch("dns_updater.cli.update_dns_entries")
+@patch("dns_updater.cli.persist_external_addresses")
+@patch("dns_updater.cli.load_external_addresses")
 def test_run_dry_run_skips_persist_and_calls_update_with_dry_run(
     mock_load: MagicMock,
     mock_persist: MagicMock,
@@ -76,9 +76,9 @@ def test_run_dry_run_skips_persist_and_calls_update_with_dry_run(
     )
 
 
-@patch("cloudflare_dns_updater.cli.update_dns_entries")
-@patch("cloudflare_dns_updater.cli.persist_external_addresses")
-@patch("cloudflare_dns_updater.cli.load_external_addresses")
+@patch("dns_updater.cli.update_dns_entries")
+@patch("dns_updater.cli.persist_external_addresses")
+@patch("dns_updater.cli.load_external_addresses")
 def test_run_dry_run_skips_when_unchanged_without_force(
     mock_load: MagicMock,
     mock_persist: MagicMock,

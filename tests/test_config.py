@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 from helpers import MOCK_DNS_ENTRIES, MOCK_ZONE, sample_config_dict, write_config_file
 
-from cloudflare_dns_updater.config import (
+from dns_updater.config import (
     default_config_path,
     example_config_path,
     load_cloudflare_api_token,
@@ -25,7 +25,7 @@ def test_load_config_logs_source_at_debug(
 ) -> None:
     monkeypatch.delenv("CLOUDFLARE_API_TOKEN", raising=False)
     config_file = write_config_file(tmp_path / "config.json")
-    with caplog.at_level(logging.DEBUG, logger="cloudflare_dns_updater.config"):
+    with caplog.at_level(logging.DEBUG, logger="dns_updater.config"):
         load_config(config_file)
     assert len(caplog.records) == 1
     assert "loading configuration from" in caplog.records[0].message
@@ -40,7 +40,7 @@ def test_load_config_logs_env_token_source(
 ) -> None:
     config_file = write_config_file(tmp_path / "config.json")
     monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "token-from-env")
-    with caplog.at_level(logging.DEBUG, logger="cloudflare_dns_updater.config"):
+    with caplog.at_level(logging.DEBUG, logger="dns_updater.config"):
         load_config(config_file)
     assert "loading settings from" in caplog.text
     assert "CLOUDFLARE_API_TOKEN environment variable" in caplog.text

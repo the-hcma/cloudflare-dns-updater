@@ -11,7 +11,7 @@ from typing import Final
 
 import requests
 
-from cloudflare_dns_updater.config import IpDiscoverySettings, load_config
+from dns_updater.config import IpDiscoverySettings, load_config
 
 _LOGGER = logging.getLogger(__name__)
 

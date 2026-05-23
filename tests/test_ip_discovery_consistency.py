@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from cloudflare_dns_updater.config import IpDiscoverySettings, load_config
-from cloudflare_dns_updater.ip import (
+from dns_updater.config import IpDiscoverySettings, load_config
+from dns_updater.ip import (
     _IPV4_FALLBACK_URLS,
     _IPV6_DISCOVERY_URLS,
     assert_sources_agree,

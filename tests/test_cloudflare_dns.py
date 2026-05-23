@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from helpers import MOCK_DNS_ENTRIES, sample_config
 
-from cloudflare_dns_updater.cloudflare_dns import update_dns_entries, upsert_dns_record
+from dns_updater.cloudflare_dns import update_dns_entries, upsert_dns_record
 
 
 @pytest.fixture
@@ -49,7 +49,7 @@ def test_upsert_dns_record_updates_when_changed(mock_client: MagicMock) -> None:
     mock_client.dns.records.update.assert_called_once()
 
 
-@patch("cloudflare_dns_updater.cloudflare_dns._cloudflare_client")
+@patch("dns_updater.cloudflare_dns._cloudflare_client")
 def test_update_dns_entries_ipv4_and_ipv6(mock_factory: MagicMock, mock_client: MagicMock) -> None:
     mock_factory.return_value = mock_client
     mock_client.dns.records.list.return_value.result = []
@@ -61,7 +61,7 @@ def test_update_dns_entries_ipv4_and_ipv6(mock_factory: MagicMock, mock_client: 
     mock_client.zones.list.assert_called_once_with(name=config.zone)
 
 
-@patch("cloudflare_dns_updater.cloudflare_dns._cloudflare_client")
+@patch("dns_updater.cloudflare_dns._cloudflare_client")
 def test_update_dns_entries_custom_dns_entries(mock_factory: MagicMock, mock_client: MagicMock) -> None:
     mock_factory.return_value = mock_client
     mock_client.dns.records.list.return_value.result = []
@@ -91,7 +91,7 @@ def test_upsert_aaaa_record_create_passes_integer_ttl(mock_client: MagicMock) ->
     )
 
 
-@patch("cloudflare_dns_updater.cloudflare_dns._cloudflare_client")
+@patch("dns_updater.cloudflare_dns._cloudflare_client")
 def test_update_dns_entries_logs_when_cloudflare_already_correct(
     mock_factory: MagicMock,
     mock_client: MagicMock,
@@ -104,14 +104,14 @@ def test_update_dns_entries_logs_when_cloudflare_already_correct(
     mock_client.dns.records.list.return_value.result = [record]
     config = sample_config(dns_entries=["hcma.info"])
 
-    with caplog.at_level("INFO", logger="cloudflare_dns_updater.cloudflare_dns"):
+    with caplog.at_level("INFO", logger="dns_updater.cloudflare_dns"):
         update_dns_entries("203.0.113.2", None, config=config)
 
     assert "already set to" in caplog.text
     assert "all 1 record(s) already match" in caplog.text
 
 
-@patch("cloudflare_dns_updater.cloudflare_dns._cloudflare_client")
+@patch("dns_updater.cloudflare_dns._cloudflare_client")
 def test_update_dns_entries_ipv4_only(mock_factory: MagicMock, mock_client: MagicMock) -> None:
     mock_factory.return_value = mock_client
     mock_client.dns.records.list.return_value.result = []
@@ -128,21 +128,21 @@ def test_cloudflare_client_requires_token(tmp_path: Path) -> None:
         update_dns_entries("203.0.113.1", None, config_path=missing_config)
 
 
-@patch("cloudflare_dns_updater.cloudflare_dns._cloudflare_client")
+@patch("dns_updater.cloudflare_dns._cloudflare_client")
 def test_update_dns_entries_dry_run_skips_cloudflare(mock_factory: MagicMock) -> None:
     config = sample_config(dns_entries=["host.example.com"])
     update_dns_entries("203.0.113.2", "2001:db8::2", config=config, dry_run=True)
     mock_factory.assert_not_called()
 
 
-@patch("cloudflare_dns_updater.cloudflare_dns.load_config")
+@patch("dns_updater.cloudflare_dns.load_config")
 def test_update_dns_entries_reads_zone_from_config(
     mock_load_config: MagicMock,
     mock_client: MagicMock,
 ) -> None:
     config = sample_config(zone="other.zone", dns_entries=["host.other.zone"])
     mock_load_config.return_value = config
-    with patch("cloudflare_dns_updater.cloudflare_dns._cloudflare_client", return_value=mock_client):
+    with patch("dns_updater.cloudflare_dns._cloudflare_client", return_value=mock_client):
         mock_client.dns.records.list.return_value.result = []
         update_dns_entries("10.0.0.1", None, config_path=Path("/tmp/config.json"))
     mock_load_config.assert_called_once()

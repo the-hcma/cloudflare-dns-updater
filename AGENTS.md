@@ -10,13 +10,13 @@ Python CLI (`cloudflare-dns-updater`) that discovers external IPv4/IPv6 addresse
 uv sync --group dev
 uv run ruff check .
 uv run ruff format .
-uv run mypy src
+uv run mypy src/dns_updater
 uv run pytest
 ```
 
 ## Conventions
 
-- Package import path: `cloudflare_dns_updater` (underscores).
+- Package import path: `dns_updater` under `src/` (repo name is `cloudflare-dns-updater`).
 - Console command: `cloudflare-dns-updater` (hyphens).
 - Config env: `CLOUDFLARE_DNS_UPDATER_CONFIG`; token env: `CLOUDFLARE_API_TOKEN`.
 - Do not commit `config.json` or API tokens.

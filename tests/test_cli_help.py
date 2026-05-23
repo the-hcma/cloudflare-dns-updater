@@ -15,7 +15,7 @@ _OPTION_LINE = re.compile(r"^  (?P<opts>\S(?:.*\S)?)  (?P<help>\S)")
 
 def _help_text() -> str:
     result = subprocess.run(
-        [sys.executable, "-m", "cloudflare_dns_updater.cli", "--help"],
+        [sys.executable, "-m", "dns_updater.cli", "--help"],
         capture_output=True,
         text=True,
         check=True,
@@ -47,9 +47,9 @@ def test_help_lists_expected_options() -> None:
 def test_help_uses_colors_when_enabled(monkeypatch: pytest.MonkeyPatch) -> None:
     import argparse
 
-    from cloudflare_dns_updater.terminal import ColoredHelpFormatter
+    from dns_updater.terminal import ColoredHelpFormatter
 
-    monkeypatch.setattr("cloudflare_dns_updater.terminal.use_color", lambda stream=None: True)
+    monkeypatch.setattr("dns_updater.terminal.use_color", lambda stream=None: True)
     parser = argparse.ArgumentParser(formatter_class=ColoredHelpFormatter)
     parser.add_argument("-f", "--force")
     parser.add_argument("-c", "--config", metavar="PATH")

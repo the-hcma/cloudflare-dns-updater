@@ -64,8 +64,8 @@ def style(text: str, *names: str, stream: TextIO | None = None) -> str:
 
 
 def _short_logger_name(name: str) -> str:
-    if name.startswith("cloudflare_dns_updater."):
-        return name.removeprefix("cloudflare_dns_updater.")
+    if name.startswith("dns_updater."):
+        return name.removeprefix("dns_updater.")
     return name
 
 

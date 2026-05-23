@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Run cloudflare-dns-updater from a git checkout (syncs uv deps, then runs the CLI).
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$repo_root"
+
+if ! command -v uv >/dev/null 2>&1; then
+  echo "ERROR: uv is required; install from https://docs.astral.sh/uv/" >&2
+  exit 1
+fi
+
+lock_file="$repo_root/uv.lock"
+stamp_file="$repo_root/.venv/uv.lock.stamp"
+
+venv_needs_sync() {
+  if [[ ! -d "$repo_root/.venv" ]]; then
+    return 0
+  fi
+  if [[ ! -f "$stamp_file" ]]; then
+    return 0
+  fi
+  ! cmp --silent "$lock_file" "$stamp_file"
+}
+
+if venv_needs_sync; then
+  uv sync --group dev
+  cp "$lock_file" "$stamp_file"
+fi
+
+exec uv run cloudflare-dns-updater "$@"

@@ -8,7 +8,7 @@ from pathlib import Path
 import requests
 from cloudflare import Cloudflare
 
-from cloudflare_dns_updater.config import DnsUpdaterConfig, load_config
+from dns_updater.config import DnsUpdaterConfig, load_config
 
 _LOGGER = logging.getLogger(__name__)
 

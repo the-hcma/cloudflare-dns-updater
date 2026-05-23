@@ -7,7 +7,7 @@ from io import StringIO
 
 import pytest
 
-from cloudflare_dns_updater.terminal import (
+from dns_updater.terminal import (
     TerminalFormatter,
     print_address_line,
     set_color_enabled,
@@ -32,7 +32,7 @@ def test_style_without_color() -> None:
 def test_terminal_formatter_plain_output() -> None:
     set_color_enabled(False)
     record = logging.LogRecord(
-        name="cloudflare_dns_updater.ip",
+        name="dns_updater.ip",
         level=logging.INFO,
         pathname=__file__,
         lineno=1,
@@ -64,7 +64,7 @@ def test_print_address_line_no_color(capsys: pytest.CaptureFixture[str]) -> None
 def test_print_error_writes_to_stderr() -> None:
     set_color_enabled(False)
     stream = StringIO()
-    from cloudflare_dns_updater.terminal import print_error
+    from dns_updater.terminal import print_error
 
     print_error("boom", stream=stream)
     assert "boom" in stream.getvalue()

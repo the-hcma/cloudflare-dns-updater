@@ -8,9 +8,9 @@ import sys
 import traceback
 from pathlib import Path
 
-from cloudflare_dns_updater.cloudflare_dns import update_dns_entries
-from cloudflare_dns_updater.ip import load_external_addresses, persist_external_addresses
-from cloudflare_dns_updater.terminal import (
+from dns_updater.cloudflare_dns import update_dns_entries
+from dns_updater.ip import load_external_addresses, persist_external_addresses
+from dns_updater.terminal import (
     ColoredHelpFormatter,
     configure_root_logging,
     print_address_line,
@@ -20,12 +20,12 @@ from cloudflare_dns_updater.terminal import (
     set_color_enabled,
 )
 
-_LOGGER = logging.getLogger("cloudflare_dns_updater")
+_LOGGER = logging.getLogger("dns_updater")
 _LOGGERS_VERBOSE: tuple[str, ...] = (
-    "cloudflare_dns_updater",
-    "cloudflare_dns_updater.config",
-    "cloudflare_dns_updater.ip",
-    "cloudflare_dns_updater.cloudflare_dns",
+    "dns_updater",
+    "dns_updater.config",
+    "dns_updater.ip",
+    "dns_updater.cloudflare_dns",
 )
 
 _DESCRIPTION = """\
@@ -54,7 +54,7 @@ def _configure_logging(*, verbose: bool) -> None:
     for logger_name in _LOGGERS_VERBOSE:
         logger = logging.getLogger(logger_name)
         logger.setLevel(level)
-        if verbose and logger_name == "cloudflare_dns_updater.config":
+        if verbose and logger_name == "dns_updater.config":
             logger.setLevel(logging.DEBUG)
 
 

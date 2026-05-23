@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
-from cloudflare_dns_updater.config import DnsUpdaterConfig, _parse_config_data
-from cloudflare_dns_updater.ip import ExternalAddresses
+from dns_updater.config import DnsUpdaterConfig, _parse_config_data
+from dns_updater.ip import ExternalAddresses
 
 MOCK_IPV4: Final = "203.0.113.50"
 MOCK_IPV6: Final = "2001:db8:home::50"

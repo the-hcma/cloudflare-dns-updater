@@ -88,24 +88,44 @@ Run `cloudflare-dns-updater -h` for full option descriptions.
 
 State is stored under `~/.local/state/cloudflare-dns-updater/` (override with `XDG_STATE_HOME`).
 
+## Run from a git checkout
+
+```bash
+./bin/cloudflare-dns-updater -v -d
+```
+
+The wrapper runs `uv sync --group dev` when `.venv` is missing or `uv.lock` has changed, then invokes the CLI. You can still use `uv run cloudflare-dns-updater` directly after a manual sync.
+
 ## Development
 
 ```bash
 uv sync --group dev
 uv run ruff check .
 uv run ruff format .
-uv run mypy src
+uv run mypy src/dns_updater
 uv run pytest
 uv run pytest -m integration   # live network checks
 ```
 
 ## Repository setup
 
-This repo follows [the-hcma](https://github.com/the-hcma) conventions. After creating the GitHub repository:
+This repo follows [the-hcma](https://github.com/the-hcma) conventions.
 
 ```bash
-/a_star/home/hcma/work/ai/repository-helpers/scripts/check-repo-practices \
-  --new-repo --repo the-hcma/cloudflare-dns-updater --suggest
+# from a clone of https://github.com/the-hcma/repository-helpers
+scripts/check-repo-practices --repo the-hcma/cloudflare-dns-updater --suggest
 ```
+
+After the **`merge-it`** label exists, the checker enforces Graphite merge-queue wiring, `protect-main`, and classic `main` protection (see [repository-helpers AGENTS.md](https://github.com/the-hcma/repository-helpers/blob/main/AGENTS.md)). Until onboarding is complete, expect a non-zero exit.
+
+| Step | Status |
+| --- | --- |
+| Workflows (`ci.yml`, cleanup, `merged-pr-closer`, dependabot auto-merge) | in repo |
+| **`merge-it`** label | created |
+| Squash-only merge settings | applied |
+| **`protect-main`** ruleset + classic `main` protection | **pending** — GitHub API returns 403 on private repos without Pro ([enable rulesets](https://github.com/the-hcma/cloudflare-dns-updater/settings/rules) / [branch protection](https://github.com/the-hcma/cloudflare-dns-updater/settings/branches) in the UI, or run `check-repo-practices --apply` once available) |
+| Graphite merge queue on `main` (squash, label `merge-it`) | **manual** in [Graphite settings](https://app.graphite.com/settings/merge-queue) |
+
+`check-repo-practices --new-repo` currently passes before `merge-it` exists; see [repository-helpers#144](https://github.com/the-hcma/repository-helpers/issues/144).
 
 See [GRAPHITE.md](./GRAPHITE.md) for stacked PRs and the `merge-it` merge queue.
