@@ -83,19 +83,31 @@ jobs:
           echo "head_sha=${head_sha}" >>"$GITHUB_OUTPUT"
 
   # GITHUB_TOKEN pushes from release-please do not fire pull_request; publish the same
-  # check context names as ci.yml so branch protection can pass on the release PR.
+  # check context names as ci.yml (in parallel) so branch protection can pass on the release PR.
   release-pr-checks:
     needs: [release-please, resolve-release-pr]
     if: >-
       always() &&
       needs.release-please.result == 'success' &&
       needs.resolve-release-pr.result == 'success'
+    name: ${{ matrix.check.name }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check:
+          - name: Ruff
+            script: .github/ci/ruff
+          - name: Mypy
+            script: .github/ci/mypy
+          - name: Pytest (hermetic)
+            script: .github/ci/pytest-hermetic
     permissions:
       checks: write
       contents: read
     env:
       HEAD_SHA: ${{ needs.resolve-release-pr.outputs.head_sha }}
+      CHECK_NAME: ${{ matrix.check.name }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -103,43 +115,10 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
 
-      - name: Ruff, Mypy, Pytest (hermetic)
+      - name: ${{ matrix.check.name }}
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-
-          run_required_check() {
-            local name="$1"
-            shift
-            local check_id conclusion started completed
-            started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            check_id="$(gh api "repos/${GITHUB_REPOSITORY}/check-runs" \
-              --method POST \
-              -f name="${name}" \
-              -f head_sha="${HEAD_SHA}" \
-              -f status=in_progress \
-              -f started_at="${started}" \
-              --jq .id)"
-            if "$@"; then
-              conclusion=success
-            else
-              conclusion=failure
-            fi
-            completed="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            gh api "repos/${GITHUB_REPOSITORY}/check-runs/${check_id}" \
-              --method PATCH \
-              -f status=completed \
-              -f conclusion="${conclusion}" \
-              -f completed_at="${completed}"
-            [[ "${conclusion}" == success ]]
-          }
-
-          failed=0
-          run_required_check "Ruff" bash .github/ci/ruff || failed=1
-          run_required_check "Mypy" bash .github/ci/mypy || failed=1
-          run_required_check "Pytest (hermetic)" bash .github/ci/pytest-hermetic || failed=1
-          exit "${failed}"
+        run: bash .github/ci/publish-release-pr-check "${CHECK_NAME}" "${{ matrix.check.script }}"
 
   publish-pypi:
     needs: release-please

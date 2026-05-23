@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Publish a branch-protection check run on a release-please PR head commit.
+# Usage: publish-release-pr-check CHECK_NAME SCRIPT
+# Requires: HEAD_SHA, GITHUB_REPOSITORY, GH_TOKEN (or gh auth).
+
+set -euo pipefail
+
+check_name="${1:?check name required}"
+script="${2:?script path required}"
+
+started="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+check_id="$(gh api "repos/${GITHUB_REPOSITORY}/check-runs" \
+  --method POST \
+  -f name="${check_name}" \
+  -f head_sha="${HEAD_SHA}" \
+  -f status=in_progress \
+  -f started_at="${started}" \
+  --jq .id)"
+
+if bash "${script}"; then
+  conclusion=success
+else
+  conclusion=failure
+fi
+
+completed="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+gh api "repos/${GITHUB_REPOSITORY}/check-runs/${check_id}" \
+  --method PATCH \
+  -f status=completed \
+  -f conclusion="${conclusion}" \
+  -f completed_at="${completed}"
+
+[[ "${conclusion}" == success ]]
