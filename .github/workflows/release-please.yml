@@ -194,6 +194,13 @@ jobs:
           version=$(uv run python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')
           echo "version=${version}" >>"$GITHUB_OUTPUT"
 
+      - name: Embed build metadata
+        run: |
+          embedded_version="$(uv run python -c 'import tomllib; print(tomllib.load(open("pyproject.toml","rb"))["project"]["version"])')"
+          export CLOUDFLARE_DNS_UPDATER_EMBED_VERSION="${embedded_version}"
+          export CLOUDFLARE_DNS_UPDATER_EMBED_COMMIT="${GITHUB_SHA}"
+          uv run python scripts/embed_build_metadata.py
+
       - name: Build distributions
         run: uv build
 
@@ -232,3 +239,13 @@ jobs:
           output=$(cloudflare-dns-updater --help)
           echo "$output"
           echo "$output" | grep -q "usage:"
+          echo "$output" | grep -qE 'version: [0-9]+\.[0-9]+\.[0-9]+ \([0-9a-f]+\)'
+
+      - name: pipx --version smoke test
+        shell: bash
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          version="${{ needs.publish-pypi.outputs.published_version }}"
+          output=$(cloudflare-dns-updater --version)
+          echo "$output"
+          echo "$output" | grep -qE "^cloudflare-dns-updater ${version} \([0-9a-f]+\)$"
