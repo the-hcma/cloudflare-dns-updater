@@ -31,7 +31,7 @@ classifiers = [
 dependencies = [
     "cloudflare>=5.2.0",
     "netifaces>=0.11.0",
-    "requests>=2.32.3",
+    "requests>=2.34.2",
 ]
 
 [project.scripts]
