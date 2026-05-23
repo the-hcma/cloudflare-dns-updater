@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.2.2...v0.3.0) (2026-05-23)
+
+
+### Features
+
+* use exit code 2 for hard failures and improve cron docs ([#19](https://github.com/the-hcma/cloudflare-dns-updater/issues/19)) ([6ba2ad5](https://github.com/the-hcma/cloudflare-dns-updater/commit/6ba2ad5d94fdd5bc2fc3756a2a081caf6a73a29f))
+
 ## [0.2.2](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.2.1...v0.2.2) (2026-05-23)
 
 
