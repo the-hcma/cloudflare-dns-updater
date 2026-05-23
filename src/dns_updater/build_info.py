@@ -98,6 +98,6 @@ def format_cli_version_line(*, prog: str) -> str:
 
 
 def format_help_version_line() -> str:
-    """Version line shown in ``--help`` epilog."""
+    """Version line shown at the top of ``--help``."""
     version, commit = get_build_info()
     return f"version: {version} ({commit})"
