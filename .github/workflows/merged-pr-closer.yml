@@ -10,7 +10,13 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: merged-pr-closer-${{ github.repository }}
+  cancel-in-progress: true
+
 permissions:
+  contents: read
+  issues: write
   pull-requests: write
 
 jobs:
@@ -20,11 +26,27 @@ jobs:
     steps:
       - name: Close open PRs that have already been merged
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          open_prs=$(gh api "repos/${REPO}/pulls?state=open&per_page=100" \
+
+          gh_api() {
+            local attempt
+            for attempt in 1 2 3; do
+              if gh api "$@"; then
+                return 0
+              fi
+              if [[ "$attempt" -lt 3 ]]; then
+                echo "gh api failed (attempt ${attempt}/3); retrying in 5s..." >&2
+                sleep 5
+              fi
+            done
+            echo "gh api failed after 3 attempts." >&2
+            return 1
+          }
+
+          open_prs=$(gh_api "repos/${REPO}/pulls?state=open&per_page=100" \
             --jq '.[].number')
 
           if [ -z "${open_prs}" ]; then
@@ -38,7 +60,7 @@ jobs:
           summary_rows=""
 
           for pr in ${open_prs}; do
-            pr_data=$(gh api "repos/${REPO}/pulls/${pr}" \
+            pr_data=$(gh_api "repos/${REPO}/pulls/${pr}" \
               --jq '{title: .title, merged: .merged, merged_at: .merged_at}')
             title=$(echo "${pr_data}" | jq -r '.title')
             is_merged=$(echo "${pr_data}" | jq -r '.merged')
@@ -47,7 +69,7 @@ jobs:
             if [ "${is_merged}" = "true" ]; then
               : # merged via GitHub API — fall through to close
             else
-              merge_comment=$(gh api "repos/${REPO}/issues/${pr}/comments" \
+              merge_comment=$(gh_api "repos/${REPO}/issues/${pr}/comments" \
                 --jq '[.[] | select(
                   .performed_via_github_app.slug == "graphite-app" and
                   (.body | test("Merged by the \\[Graphite merge queue\\]"))
@@ -58,11 +80,11 @@ jobs:
             fi
 
             echo "Closing PR #${pr}: \"${title}\" (merged at ${merge_time})"
-            gh api "repos/${REPO}/issues/${pr}/comments" \
+            gh_api "repos/${REPO}/issues/${pr}/comments" \
               --method POST \
               --field body="This PR's changes have already landed on \`main\` (merged at ${merge_time}). Closing automatically." \
               --silent
-            gh api "repos/${REPO}/pulls/${pr}" \
+            gh_api "repos/${REPO}/pulls/${pr}" \
               --method PATCH \
               --field state=closed \
               --silent
