@@ -30,6 +30,7 @@ classifiers = [
 ]
 dependencies = [
     "cloudflare>=5.2.0",
+    "idna==3.17",
     "netifaces>=0.11.0",
     "requests>=2.34.2",
 ]
@@ -58,7 +59,7 @@ packages = ["src/dns_updater"]
 dev = [
     "mypy>=1.15.0",
     "pytest>=8.3.0",
-    "ruff>=0.9.0",
+    "ruff>=0.15.15",
     "types-requests>=2.32.0",
 ]
 
