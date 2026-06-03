@@ -30,7 +30,7 @@ classifiers = [
 ]
 dependencies = [
     "cloudflare>=5.2.0",
-    "idna==3.17",
+    "idna==3.18",
     "netifaces>=0.11.0",
     "requests>=2.34.2",
 ]
