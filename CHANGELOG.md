@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.4.0...v0.4.1) (2026-06-08)
+
+
+### Bug Fixes
+
+* use shields.io PyPI version badge ([#23](https://github.com/the-hcma/cloudflare-dns-updater/issues/23)) ([d236cb4](https://github.com/the-hcma/cloudflare-dns-updater/commit/d236cb474868167d1cac7b218bd5419ae93d76f7))
+
 ## [0.4.0](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.3.0...v0.4.0) (2026-05-23)
 
 
