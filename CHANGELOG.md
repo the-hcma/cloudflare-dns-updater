@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.2](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.4.1...v0.4.2) (2026-06-11)
+
+
+### Bug Fixes
+
+* **ci:** delete Graphite MQ staging branches when PR closes ([#39](https://github.com/the-hcma/cloudflare-dns-updater/issues/39)) ([a2ee770](https://github.com/the-hcma/cloudflare-dns-updater/commit/a2ee77023a1c825b63108e1e3103092d6c7a3f78))
+* **ci:** sync canonical secret-scan script ([#35](https://github.com/the-hcma/cloudflare-dns-updater/issues/35)) ([6f0adf4](https://github.com/the-hcma/cloudflare-dns-updater/commit/6f0adf40cb8fe56548ff387dffce1c8658942f70))
+* **ci:** sync canonical secret-scan script ([#37](https://github.com/the-hcma/cloudflare-dns-updater/issues/37)) ([acd6170](https://github.com/the-hcma/cloudflare-dns-updater/commit/acd61708c1f5dae1bba70ef51cfc52fb3a1c57ae))
+* **ci:** sync canonical secret-scan script ([#38](https://github.com/the-hcma/cloudflare-dns-updater/issues/38)) ([30256a6](https://github.com/the-hcma/cloudflare-dns-updater/commit/30256a62b764e5b29d54a706615917421c1fab2e))
+
 ## [0.4.1](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.4.0...v0.4.1) (2026-06-08)
 
 
