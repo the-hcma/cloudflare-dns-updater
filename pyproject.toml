@@ -1,6 +1,6 @@
 [project]
 name = "cloudflare-dns-updater"
-version = "0.4.1"
+version = "0.4.2"
 description = "Update Cloudflare DNS A and AAAA records from your current external IP addresses"
 readme = "README.md"
 license = "MIT"
