@@ -30,7 +30,7 @@ jobs:
       tag_name: ${{ steps.release.outputs.tag_name }}
       pr: ${{ steps.release.outputs.pr }}
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v6.0.3
 
       - uses: googleapis/release-please-action@v5
         id: release
@@ -109,7 +109,7 @@ jobs:
       HEAD_SHA: ${{ needs.resolve-release-pr.outputs.head_sha }}
       CHECK_NAME: ${{ matrix.check.name }}
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v6.0.3
         with:
           ref: ${{ env.HEAD_SHA }}
 
@@ -135,7 +135,7 @@ jobs:
     outputs:
       published_version: ${{ steps.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v6.0.3
         with:
           fetch-depth: 0
 
