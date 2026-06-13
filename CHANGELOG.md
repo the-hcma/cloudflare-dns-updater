@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.3](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.4.2...v0.4.3) (2026-06-13)
+
+
+### Bug Fixes
+
+* **ci:** key CI concurrency on head SHA ([#41](https://github.com/the-hcma/cloudflare-dns-updater/issues/41)) ([70a7e77](https://github.com/the-hcma/cloudflare-dns-updater/commit/70a7e77475a69ad2ba12f9f499b28c3db7455090))
+* **ci:** run CI on Graphite restack (push fallback + guard dedup) ([#46](https://github.com/the-hcma/cloudflare-dns-updater/issues/46)) ([2797dd3](https://github.com/the-hcma/cloudflare-dns-updater/commit/2797dd369bdc31b1da6a3f6caae09ab65f433107))
+* **ci:** skip duplicate push CI when open PR exists ([#54](https://github.com/the-hcma/cloudflare-dns-updater/issues/54)) ([9fdbc8c](https://github.com/the-hcma/cloudflare-dns-updater/commit/9fdbc8ccf48b59a55c83c3dd31fba04f14825ba2))
+
 ## [0.4.2](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.4.1...v0.4.2) (2026-06-11)
 
 
