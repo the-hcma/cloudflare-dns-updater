@@ -35,6 +35,7 @@ dependencies = [
     "idna==3.18",
     "netifaces>=0.11.0",
     "requests>=2.34.2",
+    "ruff==0.15.20",
 ]
 
 [project.scripts]
