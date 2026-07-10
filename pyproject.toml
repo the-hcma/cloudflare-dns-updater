@@ -30,9 +30,11 @@ classifiers = [
 ]
 dependencies = [
     "anyio>=4.14.1",
+    "ast-serialize==0.6.0",
     "certifi==2026.6.17",
     "cloudflare>=5.4.0",
     "idna==3.18",
+    "librt==0.12.0",
     "netifaces>=0.11.0",
     "requests>=2.34.2",
     "ruff==0.15.20",
