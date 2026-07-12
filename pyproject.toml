@@ -38,6 +38,7 @@ dependencies = [
     "netifaces>=0.11.0",
     "requests>=2.34.2",
     "ruff==0.15.20",
+    "typing-extensions==4.16.0",
 ]
 
 [project.scripts]
