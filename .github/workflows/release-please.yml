@@ -98,9 +98,7 @@ jobs:
         check:
           - name: Python lint & format checks
             script: .github/ci/python-static
-            # Cutover: also publish legacy required contexts with the same
-            # conclusion (never a separate no-op that can false-green).
-            aliases: Ruff Mypy
+            aliases: ''
           - name: Pytest (hermetic)
             script: .github/ci/pytest-hermetic
             aliases: ''
