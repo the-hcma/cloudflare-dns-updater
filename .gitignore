@@ -10,3 +10,6 @@ __pycache__/
 config.json
 dist/
 *.egg-info/
+
+# Graphite / start-development stack worktrees
+.worktrees/

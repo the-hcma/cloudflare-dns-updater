@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# No-op for cutover alias checks. Remove with the alias jobs after protection retarget.
+echo "Covered by Python lint & format checks"

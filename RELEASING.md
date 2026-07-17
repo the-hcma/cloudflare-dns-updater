@@ -38,7 +38,8 @@ Use **squash merge only** on `main` (`squash_merge_commit_message: BLANK`). Merg
 
 1. Land changes on `main` with [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, …).
 2. Release Please opens or updates a release PR (`chore(main): release X.Y.Z`) bumping `pyproject.toml` and `CHANGELOG.md`.
-   The **Release Please** workflow publishes **Ruff**, **Mypy**, and **Pytest (hermetic)** checks on that PR (bot pushes do not trigger `ci.yml`).
+   The **Release Please** workflow publishes **Python lint & format checks** and
+   **Pytest (hermetic)** on that PR (bot pushes do not trigger `ci.yml`).
 3. Merge the release PR (add **`merge-it`** when using Graphite merge queue).
 4. GitHub tags the release and **Release Please** runs **Publish to PyPI**.
 

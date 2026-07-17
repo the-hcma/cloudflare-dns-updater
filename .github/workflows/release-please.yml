@@ -96,12 +96,14 @@ jobs:
       fail-fast: false
       matrix:
         check:
-          - name: Ruff
-            script: .github/ci/ruff
-          - name: Mypy
-            script: .github/ci/mypy
+          - name: Python lint & format checks
+            script: .github/ci/python-static
+            # Cutover: also publish legacy required contexts with the same
+            # conclusion (never a separate no-op that can false-green).
+            aliases: Ruff Mypy
           - name: Pytest (hermetic)
             script: .github/ci/pytest-hermetic
+            aliases: ''
     permissions:
       checks: write
       contents: read
@@ -118,6 +120,7 @@ jobs:
       - name: ${{ matrix.check.name }}
         env:
           GH_TOKEN: ${{ github.token }}
+          CHECK_ALIASES: ${{ matrix.check.aliases }}
         run: bash .github/ci/publish-release-pr-check "${CHECK_NAME}" "${{ matrix.check.script }}"
 
   publish-pypi:
@@ -155,11 +158,8 @@ jobs:
       - name: Install Python dependencies (dev)
         run: uv sync --group dev
 
-      - name: Ruff
-        run: bash .github/ci/ruff
-
-      - name: Mypy
-        run: bash .github/ci/mypy
+      - name: Python lint & format checks
+        run: bash .github/ci/python-static
 
       - name: Pytest (hermetic)
         run: bash .github/ci/pytest-hermetic

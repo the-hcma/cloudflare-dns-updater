@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Publish a branch-protection check run on a release-please PR head commit.
 # Usage: publish-release-pr-check CHECK_NAME SCRIPT
+# Optional env CHECK_ALIASES: space-separated legacy check names that receive the
+# same conclusion (cutover for branch protection). Never publish aliases from a
+# separate no-op — that false-greens required checks when SCRIPT fails.
 # Requires: HEAD_SHA, GITHUB_REPOSITORY, GH_TOKEN (or gh auth).
 
 set -euo pipefail
@@ -29,5 +32,22 @@ gh api "repos/${GITHUB_REPOSITORY}/check-runs/${check_id}" \
   -f status=completed \
   -f conclusion="${conclusion}" \
   -f completed_at="${completed}"
+
+# shellcheck disable=SC2086 # intentional split of space-separated alias list
+for alias_name in ${CHECK_ALIASES:-}; do
+  [[ -n "${alias_name}" ]] || continue
+  alias_id="$(gh api "repos/${GITHUB_REPOSITORY}/check-runs" \
+    --method POST \
+    -f name="${alias_name}" \
+    -f head_sha="${HEAD_SHA}" \
+    -f status=in_progress \
+    -f started_at="${started}" \
+    --jq .id)"
+  gh api "repos/${GITHUB_REPOSITORY}/check-runs/${alias_id}" \
+    --method PATCH \
+    -f status=completed \
+    -f conclusion="${conclusion}" \
+    -f completed_at="${completed}"
+done
 
 [[ "${conclusion}" == success ]]
