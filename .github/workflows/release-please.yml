@@ -113,7 +113,7 @@ jobs:
         with:
           ref: ${{ env.HEAD_SHA }}
 
-      - uses: astral-sh/setup-uv@v8.3.1
+      - uses: astral-sh/setup-uv@v8.3.2
 
       - name: ${{ matrix.check.name }}
         env:
@@ -140,7 +140,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: astral-sh/setup-uv@v8.3.1
+      - uses: astral-sh/setup-uv@v8.3.2
 
       - name: Verify version (manual dispatch)
         if: github.event_name == 'workflow_dispatch'
