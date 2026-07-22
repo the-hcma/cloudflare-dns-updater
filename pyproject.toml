@@ -29,7 +29,7 @@ classifiers = [
     "Topic :: Internet :: Name Service (DNS)",
 ]
 dependencies = [
-    "anyio>=4.14.1",
+    "anyio>=4.14.2",
     "ast-serialize==0.6.0",
     "certifi==2026.6.17",
     "charset-normalizer>=3.4.9",
