@@ -70,21 +70,19 @@ Exit `1` is a successful run that changed DNS; exit `2` is what you should alert
 
 #### Logging and alerts
 
-Cron sends mail when a job writes to **stdout or stderr**, not merely when the exit code is non-zero. Redirecting all output to a log file (`>>/tmp/...log 2>&1`) therefore **suppresses cron mail**, even when the tool fails.
+Every run appends output to a log file (default `~/.local/state/cloudflare-dns-updater/updater.log`, or `$XDG_STATE_HOME/cloudflare-dns-updater/updater.log`; override with `--log`). On a TTY, output is also shown live. Under cron (non-TTY), stderr is written **only on non-success exits** (anything other than `0` or `1`), including the failure text so cron mail is actionable without redirect gymnastics.
 
-**Recommended — ``--cron`` mode:** appends every run to a log file and writes to stderr **only on non-success exits** (anything other than `0` or `1`), including the captured failure text so cron mail is actionable:
+**Recommended crontab** (no shell wrapper, no output redirect):
 
 ```cron
 PATH=/usr/bin:/bin
 HOME=/home/you
-*/5 * * * * /home/you/.local/bin/cloudflare-dns-updater --cron
+*/5 * * * * /home/you/.local/bin/cloudflare-dns-updater
 ```
 
-Default log path is `/tmp/cloudflare-dns-updater.log` (override with `--log /path/to/file`). Combine with other flags as usual, for example `cloudflare-dns-updater --cron -f` or `cloudflare-dns-updater --cron --log /var/log/dns-updater.log -c /path/to/config.json`.
+Successful DNS updates (exit `1`) stay quiet on stderr so cron does not mail on every address change. Failures mail the captured error body (and still land in the log).
 
-Successful DNS updates (exit `1`) stay quiet so cron does not mail on every address change.
-
-**Alternative — no log file, mail on any non-zero exit** (includes exit `1` when records were updated):
+**Alternative — mail on any non-zero exit** (includes exit `1` when records were updated):
 
 ```cron
 HOME=/home/you

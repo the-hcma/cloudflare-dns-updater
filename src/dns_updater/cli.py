@@ -11,7 +11,7 @@ from pathlib import Path
 from dns_updater.build_info import format_cli_version_line, format_help_version_line
 from dns_updater.cloudflare_dns import update_dns_entries
 from dns_updater.config import ConfigNotFoundError
-from dns_updater.cron import DEFAULT_CRON_LOG, run_cron_capture
+from dns_updater.cron import default_log_path, run_with_logging
 from dns_updater.exit_codes import EXIT_FAILURE, EXIT_OK, EXIT_UPDATED
 from dns_updater.ip import load_external_addresses, persist_external_addresses
 from dns_updater.terminal import (
@@ -45,12 +45,15 @@ examples:
   %(prog)s -f              recheck Cloudflare even if local state is unchanged
   %(prog)s -d              dry-run: show planned DNS changes only
   %(prog)s -v -d           verbose dry-run with discovery details
-  %(prog)s --cron          cron mode: log runs; mail stderr only on failure
 
 exit status:
     0 — no update was needed
     1 — records were updated or dry-run completed (success)
     2 — configuration or execution failure (alert on this in cron jobs)
+
+Every run appends to a log file (default: ~/.local/state/cloudflare-dns-updater/updater.log).
+On a TTY, output is also shown live. Under cron (non-TTY), stderr is written
+only on non-success exits so mail includes the failure text without spam on 0/1.
 
 colors are enabled on terminals; set NO_COLOR=1 or pass --no-color to disable
 """
@@ -149,18 +152,11 @@ def _build_parser() -> argparse.ArgumentParser:
         help="disable ANSI colors even when writing to a terminal",
     )
     parser.add_argument(
-        "--cron",
-        action="store_true",
-        help=(
-            "cron mode: append all output to --log; write captured output to stderr "
-            f"only on non-success exits (not {EXIT_OK} or {EXIT_UPDATED}) for actionable cron mail"
-        ),
-    )
-    parser.add_argument(
         "--log",
         type=Path,
+        default=None,
         metavar="PATH",
-        help=f"with --cron, append run output to this file (default: {DEFAULT_CRON_LOG})",
+        help=(f"append every run's output to this file (default: {default_log_path()})"),
     )
     parser.add_argument(
         "-f",
@@ -230,15 +226,8 @@ def main(argv: list[str] | None = None) -> None:
     """Parse arguments and run the updater."""
     parser = _build_parser()
     args = parser.parse_args(argv)
-
-    if args.log is not None and not args.cron:
-        parser.error("--log requires --cron")
-
-    if args.cron:
-        log_path = args.log if args.log is not None else DEFAULT_CRON_LOG
-        raise SystemExit(run_cron_capture(log_path=log_path, body=lambda: _execute(args)))
-
-    _execute(args)
+    log_path = args.log if args.log is not None else default_log_path()
+    raise SystemExit(run_with_logging(log_path=log_path, body=lambda: _execute(args)))
 
 
 if __name__ == "__main__":
