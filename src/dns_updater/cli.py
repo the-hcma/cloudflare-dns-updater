@@ -11,6 +11,7 @@ from pathlib import Path
 from dns_updater.build_info import format_cli_version_line, format_help_version_line
 from dns_updater.cloudflare_dns import update_dns_entries
 from dns_updater.config import ConfigNotFoundError
+from dns_updater.cron import DEFAULT_CRON_LOG, run_cron_capture
 from dns_updater.exit_codes import EXIT_FAILURE, EXIT_OK, EXIT_UPDATED
 from dns_updater.ip import load_external_addresses, persist_external_addresses
 from dns_updater.terminal import (
@@ -44,6 +45,7 @@ examples:
   %(prog)s -f              recheck Cloudflare even if local state is unchanged
   %(prog)s -d              dry-run: show planned DNS changes only
   %(prog)s -v -d           verbose dry-run with discovery details
+  %(prog)s --cron          cron mode: log runs; mail stderr only on failure
 
 exit status:
     0 — no update was needed
@@ -128,8 +130,7 @@ def run(
     return EXIT_UPDATED
 
 
-def main() -> None:
-    """Parse arguments and run the updater."""
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cloudflare-dns-updater",
         description=_description(),
@@ -146,6 +147,20 @@ def main() -> None:
         "--no-color",
         action="store_true",
         help="disable ANSI colors even when writing to a terminal",
+    )
+    parser.add_argument(
+        "--cron",
+        action="store_true",
+        help=(
+            "cron mode: append all output to --log; write captured output to stderr "
+            f"only on non-success exits (not {EXIT_OK} or {EXIT_UPDATED}) for actionable cron mail"
+        ),
+    )
+    parser.add_argument(
+        "--log",
+        type=Path,
+        metavar="PATH",
+        help=f"with --cron, append run output to this file (default: {DEFAULT_CRON_LOG})",
     )
     parser.add_argument(
         "-f",
@@ -178,8 +193,11 @@ def main() -> None:
             "~/.config/cloudflare-dns-updater/config.json, or CLOUDFLARE_DNS_UPDATER_CONFIG)"
         ),
     )
-    args = parser.parse_args()
+    return parser
 
+
+def _execute(args: argparse.Namespace) -> None:
+    """Run the updater for already-parsed args; always exits via SystemExit."""
     if args.no_color:
         set_color_enabled(False)
 
@@ -206,6 +224,21 @@ def main() -> None:
             traceback.print_exc(file=sys.stderr)
         print_error(str(exception) if args.verbose else f"execution failed: {exception}")
         raise SystemExit(EXIT_FAILURE) from None
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Parse arguments and run the updater."""
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+
+    if args.log is not None and not args.cron:
+        parser.error("--log requires --cron")
+
+    if args.cron:
+        log_path = args.log if args.log is not None else DEFAULT_CRON_LOG
+        raise SystemExit(run_cron_capture(log_path=log_path, body=lambda: _execute(args)))
+
+    _execute(args)
 
 
 if __name__ == "__main__":
