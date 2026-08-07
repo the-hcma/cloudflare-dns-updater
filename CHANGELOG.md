@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.5.0](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.4.2...v0.5.0) (2026-08-07)
+
+
+### Features
+
+* actionable cron failure mail by default ([#106](https://github.com/the-hcma/cloudflare-dns-updater/issues/106)) ([25a4325](https://github.com/the-hcma/cloudflare-dns-updater/commit/25a4325364fd8877ae78f354b40d5277312ca852))
+
+
+### Bug Fixes
+
+* **ci:** harden Graphite restack guard push dedup ([#57](https://github.com/the-hcma/cloudflare-dns-updater/issues/57)) ([f1e9004](https://github.com/the-hcma/cloudflare-dns-updater/commit/f1e9004f81e61a82614cbdf7d43ec109890be5d6))
+* **ci:** key CI concurrency on head SHA ([#41](https://github.com/the-hcma/cloudflare-dns-updater/issues/41)) ([70a7e77](https://github.com/the-hcma/cloudflare-dns-updater/commit/70a7e77475a69ad2ba12f9f499b28c3db7455090))
+* **ci:** key CI concurrency on head SHA ([#64](https://github.com/the-hcma/cloudflare-dns-updater/issues/64)) ([001e46e](https://github.com/the-hcma/cloudflare-dns-updater/commit/001e46e72b3b436b4b744c8883c6ea68defe746b))
+* **ci:** run CI on Graphite restack (push fallback + guard dedup) ([#46](https://github.com/the-hcma/cloudflare-dns-updater/issues/46)) ([2797dd3](https://github.com/the-hcma/cloudflare-dns-updater/commit/2797dd369bdc31b1da6a3f6caae09ab65f433107))
+* **ci:** skip duplicate push CI when open PR exists ([#54](https://github.com/the-hcma/cloudflare-dns-updater/issues/54)) ([9fdbc8c](https://github.com/the-hcma/cloudflare-dns-updater/commit/9fdbc8ccf48b59a55c83c3dd31fba04f14825ba2))
+* **ci:** sync canonical secret-scan script ([#103](https://github.com/the-hcma/cloudflare-dns-updater/issues/103)) ([45f9d45](https://github.com/the-hcma/cloudflare-dns-updater/commit/45f9d454dfafcef829696a3dff6c5016803c37d2))
+
 ## [0.4.2](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.4.1...v0.4.2) (2026-06-11)
 
 
