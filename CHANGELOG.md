@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.6.0](https://github.com/the-hcma/cloudflare-dns-updater/compare/cloudflare-dns-updater-v0.5.0...cloudflare-dns-updater-v0.6.0) (2026-08-07)
+
+
+### Features
+
+* actionable cron failure mail by default ([#106](https://github.com/the-hcma/cloudflare-dns-updater/issues/106)) ([25a4325](https://github.com/the-hcma/cloudflare-dns-updater/commit/25a4325364fd8877ae78f354b40d5277312ca852))
+* add release-please, PyPI publish, and pipx install docs ([#1](https://github.com/the-hcma/cloudflare-dns-updater/issues/1)) ([95ec4a4](https://github.com/the-hcma/cloudflare-dns-updater/commit/95ec4a4fe93bcda3d2e82c2978a1014e35f74dde))
+* log when external addresses and DNS records are unchanged ([#21](https://github.com/the-hcma/cloudflare-dns-updater/issues/21)) ([fd45a35](https://github.com/the-hcma/cloudflare-dns-updater/commit/fd45a356541ad63402fbe24afb4a4c0bb4bc61fb))
+* show version and commit in --help and --version ([#7](https://github.com/the-hcma/cloudflare-dns-updater/issues/7)) ([99204a7](https://github.com/the-hcma/cloudflare-dns-updater/commit/99204a7767bdc2746ffe90ef0c48b40cec00353b))
+* use exit code 2 for hard failures and improve cron docs ([#19](https://github.com/the-hcma/cloudflare-dns-updater/issues/19)) ([6ba2ad5](https://github.com/the-hcma/cloudflare-dns-updater/commit/6ba2ad5d94fdd5bc2fc3756a2a081caf6a73a29f))
+
+
+### Bug Fixes
+
+* **ci:** delete Graphite MQ staging branches when PR closes ([#39](https://github.com/the-hcma/cloudflare-dns-updater/issues/39)) ([a2ee770](https://github.com/the-hcma/cloudflare-dns-updater/commit/a2ee77023a1c825b63108e1e3103092d6c7a3f78))
+* **ci:** harden Graphite restack guard push dedup ([#57](https://github.com/the-hcma/cloudflare-dns-updater/issues/57)) ([f1e9004](https://github.com/the-hcma/cloudflare-dns-updater/commit/f1e9004f81e61a82614cbdf7d43ec109890be5d6))
+* **ci:** harden merged-pr-closer against transient gh 401 errors ([#17](https://github.com/the-hcma/cloudflare-dns-updater/issues/17)) ([8f70a31](https://github.com/the-hcma/cloudflare-dns-updater/commit/8f70a31e71ee00091aaad881f379a406baea0d27))
+* **ci:** key CI concurrency on head SHA ([#41](https://github.com/the-hcma/cloudflare-dns-updater/issues/41)) ([70a7e77](https://github.com/the-hcma/cloudflare-dns-updater/commit/70a7e77475a69ad2ba12f9f499b28c3db7455090))
+* **ci:** key CI concurrency on head SHA ([#64](https://github.com/the-hcma/cloudflare-dns-updater/issues/64)) ([001e46e](https://github.com/the-hcma/cloudflare-dns-updater/commit/001e46e72b3b436b4b744c8883c6ea68defe746b))
+* **ci:** run CI on Graphite restack (push fallback + guard dedup) ([#46](https://github.com/the-hcma/cloudflare-dns-updater/issues/46)) ([2797dd3](https://github.com/the-hcma/cloudflare-dns-updater/commit/2797dd369bdc31b1da6a3f6caae09ab65f433107))
+* **ci:** skip duplicate push CI when open PR exists ([#54](https://github.com/the-hcma/cloudflare-dns-updater/issues/54)) ([9fdbc8c](https://github.com/the-hcma/cloudflare-dns-updater/commit/9fdbc8ccf48b59a55c83c3dd31fba04f14825ba2))
+* **ci:** sync canonical secret-scan script ([#103](https://github.com/the-hcma/cloudflare-dns-updater/issues/103)) ([45f9d45](https://github.com/the-hcma/cloudflare-dns-updater/commit/45f9d454dfafcef829696a3dff6c5016803c37d2))
+* **ci:** sync canonical secret-scan script ([#35](https://github.com/the-hcma/cloudflare-dns-updater/issues/35)) ([6f0adf4](https://github.com/the-hcma/cloudflare-dns-updater/commit/6f0adf40cb8fe56548ff387dffce1c8658942f70))
+* **ci:** sync canonical secret-scan script ([#37](https://github.com/the-hcma/cloudflare-dns-updater/issues/37)) ([acd6170](https://github.com/the-hcma/cloudflare-dns-updater/commit/acd61708c1f5dae1bba70ef51cfc52fb3a1c57ae))
+* **ci:** sync canonical secret-scan script ([#38](https://github.com/the-hcma/cloudflare-dns-updater/issues/38)) ([30256a6](https://github.com/the-hcma/cloudflare-dns-updater/commit/30256a62b764e5b29d54a706615917421c1fab2e))
+* grant checks write for release PR ci check ([#4](https://github.com/the-hcma/cloudflare-dns-updater/issues/4)) ([c7986f6](https://github.com/the-hcma/cloudflare-dns-updater/commit/c7986f6ef965d47de79d510a95c19720ffa582ab))
+* publish required CI checks on release-please PRs ([#9](https://github.com/the-hcma/cloudflare-dns-updater/issues/9)) ([cfe0f61](https://github.com/the-hcma/cloudflare-dns-updater/commit/cfe0f611d82efa1420cd32ece1cb7b5152c2595c))
+* quiet missing-config errors and write starter config ([#12](https://github.com/the-hcma/cloudflare-dns-updater/issues/12)) ([4c91172](https://github.com/the-hcma/cloudflare-dns-updater/commit/4c9117241bfddbae1053c618e96d0e204298caba))
+* run release-please PR checks in parallel ([#10](https://github.com/the-hcma/cloudflare-dns-updater/issues/10)) ([8b516df](https://github.com/the-hcma/cloudflare-dns-updater/commit/8b516df935bf483b8be7567627089f6e6ccfebb2))
+* use PyPI-backed badge that reflects latest release ([#13](https://github.com/the-hcma/cloudflare-dns-updater/issues/13)) ([10027e4](https://github.com/the-hcma/cloudflare-dns-updater/commit/10027e40a2f57ecee61fb84d26521354e1b6c555))
+* use shields.io PyPI version badge ([#23](https://github.com/the-hcma/cloudflare-dns-updater/issues/23)) ([d236cb4](https://github.com/the-hcma/cloudflare-dns-updater/commit/d236cb474868167d1cac7b218bd5419ae93d76f7))
+
+
+### Documentation
+
+* clarify PyPI trusted publisher setup ([#5](https://github.com/the-hcma/cloudflare-dns-updater/issues/5)) ([d019da8](https://github.com/the-hcma/cloudflare-dns-updater/commit/d019da8eeeee917b2aab77a18e65d186dd3c1a53))
+* expand AGENTS.md with session startup and PR workflow ([#14](https://github.com/the-hcma/cloudflare-dns-updater/issues/14)) ([7cc41b0](https://github.com/the-hcma/cloudflare-dns-updater/commit/7cc41b0ec43219bd04386afc0e74a6d3ddadcd42))
+* README badges and version in help description ([#8](https://github.com/the-hcma/cloudflare-dns-updater/issues/8)) ([38ef1ad](https://github.com/the-hcma/cloudflare-dns-updater/commit/38ef1ad21bd7589730925c5cfe2a1d83bca46bfe))
+
 ## [0.5.0](https://github.com/the-hcma/cloudflare-dns-updater/compare/v0.4.2...v0.5.0) (2026-08-07)
 
 
