@@ -11,6 +11,7 @@ from pathlib import Path
 from dns_updater.build_info import format_cli_version_line, format_help_version_line
 from dns_updater.cloudflare_dns import update_dns_entries
 from dns_updater.config import ConfigNotFoundError
+from dns_updater.cron import default_log_path, run_with_logging
 from dns_updater.exit_codes import EXIT_FAILURE, EXIT_OK, EXIT_UPDATED
 from dns_updater.ip import load_external_addresses, persist_external_addresses
 from dns_updater.terminal import (
@@ -49,6 +50,10 @@ exit status:
     0 — no update was needed
     1 — records were updated or dry-run completed (success)
     2 — configuration or execution failure (alert on this in cron jobs)
+
+Every run appends to a log file (default: ~/.local/state/cloudflare-dns-updater/updater.log).
+On a TTY, output is also shown live. Under cron (non-TTY), stderr is written
+only on non-success exits so mail includes the failure text without spam on 0/1.
 
 colors are enabled on terminals; set NO_COLOR=1 or pass --no-color to disable
 """
@@ -128,8 +133,7 @@ def run(
     return EXIT_UPDATED
 
 
-def main() -> None:
-    """Parse arguments and run the updater."""
+def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="cloudflare-dns-updater",
         description=_description(),
@@ -146,6 +150,13 @@ def main() -> None:
         "--no-color",
         action="store_true",
         help="disable ANSI colors even when writing to a terminal",
+    )
+    parser.add_argument(
+        "--log",
+        type=Path,
+        default=None,
+        metavar="PATH",
+        help=(f"append every run's output to this file (default: {default_log_path()})"),
     )
     parser.add_argument(
         "-f",
@@ -178,8 +189,11 @@ def main() -> None:
             "~/.config/cloudflare-dns-updater/config.json, or CLOUDFLARE_DNS_UPDATER_CONFIG)"
         ),
     )
-    args = parser.parse_args()
+    return parser
 
+
+def _execute(args: argparse.Namespace) -> None:
+    """Run the updater for already-parsed args; always exits via SystemExit."""
     if args.no_color:
         set_color_enabled(False)
 
@@ -206,6 +220,14 @@ def main() -> None:
             traceback.print_exc(file=sys.stderr)
         print_error(str(exception) if args.verbose else f"execution failed: {exception}")
         raise SystemExit(EXIT_FAILURE) from None
+
+
+def main(argv: list[str] | None = None) -> None:
+    """Parse arguments and run the updater."""
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+    log_path = args.log if args.log is not None else default_log_path()
+    raise SystemExit(run_with_logging(log_path=log_path, body=lambda: _execute(args)))
 
 
 if __name__ == "__main__":
