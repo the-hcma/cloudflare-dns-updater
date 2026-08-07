@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # One sync for ruff + mypy (shared venv). Prefer this in CI over separate jobs.
+# Assert against the committed lock before `uv sync` — sync can rewrite uv.lock
+# from pyproject and would hide release-please extra-files misses.
+bash .github/ci/assert-uv-lock-version
 bash .github/ci/setup-python
 uv run ruff check .
 uv run ruff format --check .
