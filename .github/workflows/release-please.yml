@@ -32,10 +32,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
+      # Config/manifest own release-type + uv.lock self-version bump (extra-files).
       - uses: googleapis/release-please-action@v5
         id: release
         with:
-          release-type: python
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
       - name: Assert release-please acted on releasable commits
         if: github.event_name == 'push'
