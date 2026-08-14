@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.1](https://github.com/the-hcma/cloudflare-dns-updater/compare/cloudflare-dns-updater-v0.6.0...cloudflare-dns-updater-v0.6.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* **ci:** trigger CI on merge_group for GitHub MQ ([#114](https://github.com/the-hcma/cloudflare-dns-updater/issues/114)) ([5f92c69](https://github.com/the-hcma/cloudflare-dns-updater/commit/5f92c69da107dfb545bdca1ddf27729a5c8d8fbb))
+
+
+### Documentation
+
+* adopt org lexicographic code-organization Cursor rule ([#117](https://github.com/the-hcma/cloudflare-dns-updater/issues/117)) ([a7dd716](https://github.com/the-hcma/cloudflare-dns-updater/commit/a7dd716098bc583879967ae82beb741c217e2b63))
+
 ## [0.6.0](https://github.com/the-hcma/cloudflare-dns-updater/compare/cloudflare-dns-updater-v0.5.0...cloudflare-dns-updater-v0.6.0) (2026-08-07)
 
 
