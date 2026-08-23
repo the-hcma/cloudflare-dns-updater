@@ -8,9 +8,6 @@ resolution-markers = [
 
 [options]
 
-[options.exclude-newer-package]
-typing-inspection = "2026-08-13T07:04:42Z"
-
 [[package]]
 name = "annotated-types"
 version = "0.8.0"
@@ -296,7 +293,7 @@ requires-dist = [
     { name = "mypy", specifier = ">=2.3.0" },
     { name = "netifaces", specifier = ">=0.11.0" },
     { name = "requests", specifier = ">=2.34.2" },
-    { name = "ruff", specifier = ">=0.16.2" },
+    { name = "ruff", specifier = ">=0.16.3" },
     { name = "types-requests", specifier = ">=2.33.0.20260712" },
     { name = "typing-extensions", specifier = "==4.16.0" },
 ]
@@ -305,7 +302,7 @@ requires-dist = [
 dev = [
     { name = "mypy", specifier = ">=2.3.0" },
     { name = "pytest", specifier = ">=9.1.1" },
-    { name = "ruff", specifier = ">=0.16.2" },
+    { name = "ruff", specifier = ">=0.16.3" },
     { name = "types-requests", specifier = ">=2.33.0.20260712" },
 ]
 
