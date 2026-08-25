@@ -33,7 +33,7 @@ dependencies = [
     "anyio>=4.14.2",
     "ast-serialize>=0.8.0",
     "certifi>=2026.7.22",
-    "charset-normalizer>=3.5.0",
+    "charset-normalizer>=3.5.1",
     "cloudflare>=5.6.0",
     "idna==3.18",
     "librt>=0.15.0",
