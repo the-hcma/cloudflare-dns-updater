@@ -1,0 +1,80 @@
+---
+description: All remote/network I/O must use explicit timeouts and bounded retries
+alwaysApply: true
+---
+
+# Remote timeouts and retries
+
+Any code that talks to a network peer — the Cloudflare API (the `cloudflare`
+SDK), public IP-discovery endpoints (`checkip.amazonaws.com`, the Nest router
+status URL) via `requests`, webhooks, package indexes, `gh`/`curl` helpers —
+must not hang indefinitely and must not retry without a bound. Org template
+sync: repository-helpers#570.
+
+## Timeouts (required)
+
+- Set an **explicit timeout** on every remote call (connect + read, or a single
+  overall deadline the library supports). Never leave a client on library
+  defaults that mean "wait forever."
+- `src/dns_updater/ip.py` already passes `timeout=` to every `requests.get`
+  (`discover_ipv4_from_nest` → 10s, `_fetch_url` → 30s). Keep that — do not add
+  a bare `requests.get(url)` anywhere.
+- **The `cloudflare` SDK client is constructed without a timeout in
+  `_cloudflare_client` — fix that.** Pass an explicit `timeout=` (the SDK accepts
+  a float or an `httpx.Timeout`) so zone/record list and upsert calls have a
+  finite deadline. Prefer a single module constant reused by every client.
+- Agent / shell wrappers that hit the network should use the helpers'
+  `--timeout` / `run_command … --timeout` patterns when available.
+
+## Retries (required when retrying)
+
+- Retries are for **transient** failures only: connect/read timeouts, connection
+  reset, and `429` / `502` / `503` / `504`. Do **not** blanket-retry
+  `requests.exceptions.RequestException` or a broad SDK error base — those cover
+  permanent `400` / `404` responses. Inspect the status and retry only the
+  transient subset.
+- The `cloudflare` SDK already retries transient failures with a **bounded**
+  built-in cap (`max_retries`, default small `N`). Keep that cap — do not set it
+  to a large number or disable it, and do not wrap SDK calls in a second
+  unbounded retry layer.
+- For the raw `requests` IP-discovery calls, if you add a retry, cap attempts
+  (small fixed `N`, 2–5) **or** a total budget, back off between attempts
+  (exponential with jitter), and honor `Retry-After` (clamped) when present.
+- Do **not** retry a non-idempotent write (DNS record create) unless it is safe
+  — a record upsert that first reads the current record and only writes on a
+  diff is effectively idempotent; a blind create is not. Prefer fail fast on
+  4xx except `408` / `429`.
+- Log or surface a clear timeout / retry-exhaustion error and exit non-zero
+  (`EXIT_FAILURE`) — never spin silently.
+
+## Anti-patterns
+
+```python
+# bad — no timeout
+requests.get(url)
+Cloudflare(api_token=token)          # SDK client with no timeout
+
+# bad — unbounded retry
+while True:
+    try:
+        return call()
+    except requests.exceptions.RequestException:
+        continue
+```
+
+```python
+# good — explicit timeout on every client
+requests.get(url, timeout=_HTTP_TIMEOUT_S)
+Cloudflare(api_token=token, timeout=_CLOUDFLARE_TIMEOUT_S)   # keep SDK max_retries cap
+
+# good — bounded, backed-off retry of a transient IP-discovery read
+for attempt in range(1, _MAX_ATTEMPTS + 1):
+    try:
+        resp = requests.get(url, timeout=_HTTP_TIMEOUT_S)
+        resp.raise_for_status()
+        return resp.text.strip()
+    except (requests.Timeout, requests.ConnectionError):
+        if attempt == _MAX_ATTEMPTS:
+            raise
+        time.sleep(_BACKOFF_S * 2 ** (attempt - 1))
+```

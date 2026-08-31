@@ -39,6 +39,13 @@ Before creating any branch or writing code, initialize the session from the repo
 - Every public function and method has complete type annotations. **mypy** (`strict = true`) enforces this.
 - **Only `uv`** for Python dependency management. Never `pip` directly.
 - The lock file (`uv.lock`) must always be committed.
+- **Remote timeouts and bounded retries:** `.cursor/rules/remote-timeouts-retries.mdc`
+  (`alwaysApply`, org rule — template sync
+  [repository-helpers#570](https://github.com/the-hcma/repository-helpers/issues/570)).
+  Every `requests` call and the `Cloudflare` SDK client sets an explicit finite
+  timeout; the SDK's bounded `max_retries` cap stays in place; any hand-rolled
+  retry is capped/budgeted, backed off, transient-only, and never re-sends a
+  non-idempotent write.
 
 ---
 
