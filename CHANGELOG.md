@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.2](https://github.com/the-hcma/cloudflare-dns-updater/compare/cloudflare-dns-updater-v0.6.1...cloudflare-dns-updater-v0.6.2) (2026-09-19)
+
+
+### Documentation
+
+* **rules:** adopt dedicated github-api-throttle rule (repository-helpers[#608](https://github.com/the-hcma/cloudflare-dns-updater/issues/608)) ([#141](https://github.com/the-hcma/cloudflare-dns-updater/issues/141)) ([be41697](https://github.com/the-hcma/cloudflare-dns-updater/commit/be416976135382bd93f87afa6105ad49fc34c304))
+
 ## [0.6.1](https://github.com/the-hcma/cloudflare-dns-updater/compare/cloudflare-dns-updater-v0.6.0...cloudflare-dns-updater-v0.6.1) (2026-08-14)
 
 
