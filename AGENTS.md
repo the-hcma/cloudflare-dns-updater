@@ -18,6 +18,8 @@ Python CLI (`cloudflare-dns-updater`) that discovers external IPv4/IPv6 addresse
 ## Session Startup
 
 - At the **start of every agent session**, before acting from assumed conventions, read this `AGENTS.md` in full, then read every `alwaysApply: true` rule under `.cursor/rules/*.mdc` (plus any whose `globs` match files you will touch) — `AGENTS.md` and `.cursor/rules/` together are the contract. `CLAUDE.md` (a `@AGENTS.md` import) and `.github/copilot-instructions.md` are thin shims so Claude Code and Copilot reach the same guidance.
+- Markdown files you commit, this one included, use one physical line per paragraph, list item and blockquote, with no hard line breaks (see `.agents/rules/github-content-formatting.md`).
+
 Before creating any branch or writing code, initialize the session from the repository root using [repository-helpers](https://github.com/the-hcma/repository-helpers):
 
 ```bash
@@ -40,13 +42,7 @@ Before creating any branch or writing code, initialize the session from the repo
 - Every public function and method has complete type annotations. **mypy** (`strict = true`) enforces this.
 - **Only `uv`** for Python dependency management. Never `pip` directly.
 - The lock file (`uv.lock`) must always be committed.
-- **Remote timeouts and bounded retries:** `.cursor/rules/remote-timeouts-retries.mdc`
-  (`alwaysApply`, org rule — template sync
-  [repository-helpers#570](https://github.com/the-hcma/repository-helpers/issues/570)).
-  Every `requests` call and the `Cloudflare` SDK client sets an explicit finite
-  timeout; the SDK's bounded `max_retries` cap stays in place; any hand-rolled
-  retry is capped/budgeted, backed off, transient-only, and never re-sends a
-  non-idempotent write.
+- **Remote timeouts and bounded retries:** `.cursor/rules/remote-timeouts-retries.mdc` (`alwaysApply`, org rule — template sync [repository-helpers#570](https://github.com/the-hcma/repository-helpers/issues/570)). Every `requests` call and the `Cloudflare` SDK client sets an explicit finite timeout; the SDK's bounded `max_retries` cap stays in place; any hand-rolled retry is capped/budgeted, backed off, transient-only, and never re-sends a non-idempotent write.
 
 ---
 
