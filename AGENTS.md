@@ -73,7 +73,7 @@ uv run pytest -m "not integration"
 - Never work directly on `main`. Create stacked branches with `gh stack init <stack>/<description>` / `gh stack add`.
 - Keep each branch focused on one logical change.
 - Submit with `scripts/dev/submit-stack` (or `gh stack submit --auto --open --remote origin`); PRs are published, not drafts.
-- To merge, ask the user first, then enqueue on GitHub's merge queue: `gh pr merge <number> --auto --squash`, or `gh stack merge <number> --yes --squash` (from the stack's worktree; it also merges every unmerged PR below that number, so confirm that whole set with the user first) for a PR that belongs to a gh stack (`scripts/dev/merge-stack --pr <n>` in repository-helpers picks the right one). Do not use the `merge-it` label.
+- To merge, ask the user first, then enqueue on GitHub's merge queue: `gh pr merge <number> --auto --squash`, or `gh stack merge --yes --squash` with no argument (from the stack's worktree; it merges the whole current stack bottom-up, so confirm that whole set with the user first) for a PR that belongs to a gh stack (`scripts/dev/merge-stack --pr <n>` in repository-helpers picks the right one). Do not use the `merge-it` label.
 - Follow **Conventional Commits**: `feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`.
 - PR descriptions must include **Summary** and **Test plan** at minimum.
 
