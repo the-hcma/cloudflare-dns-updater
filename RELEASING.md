@@ -45,7 +45,7 @@ Use **squash merge only** on `main` (`squash_merge_commit_message: BLANK`). Merg
    **Pytest (hermetic)** on that PR (bot pushes do not trigger `ci.yml`).
    CI runs `assert-uv-lock-version` **before** `uv sync` so a silent jsonpath miss
    fails the release PR instead of shipping skew.
-3. Merge the release PR (add **`merge-it`** when using Graphite merge queue).
+3. Merge the release PR through the GitHub merge queue (`gh pr merge <number> --auto --squash`).
 4. GitHub tags the release and **Release Please** runs **Publish to PyPI**.
 
 ## Manual publish (fallback)

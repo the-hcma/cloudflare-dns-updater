@@ -183,4 +183,4 @@ This repo follows [the-hcma](https://github.com/the-hcma) conventions. Validate 
 scripts/check-repo-practices --repo the-hcma/cloudflare-dns-updater --suggest
 ```
 
-See [GRAPHITE.md](./GRAPHITE.md) for stacked PRs and the `merge-it` merge queue.
+See `AGENTS.md` for stacked PRs (`gh stack`) and merging through the GitHub merge queue.
