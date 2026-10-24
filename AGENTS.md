@@ -27,10 +27,10 @@ Before creating any branch or writing code, initialize the session from the repo
 ~/work/ai/repository-helpers/scripts/dev/start-development --worktree <stack-name> --no-interactive
 ```
 
-- **`--refresh`** (first): syncs `main` with Graphite (`gt sync`), prunes merged worktrees and branches, pulls latest `main`, then exits.
+- **`--refresh`** (first): syncs `main` (`gh stack sync`), prunes merged worktrees and branches, pulls latest `main`, then exits.
 - **plain / `--worktree`** (second): repeats sync/cleanup, then creates or resumes a worktree under `.worktrees/<stack-name>-wt`.
 - AI agents must always pass **`--no-interactive`** and an explicit **`--worktree`** name.
-- Do not manually create worktrees or run `gt sync` separately — `start-development` is the single entry point for new work.
+- Do not manually create worktrees or run `gh stack sync` separately — `start-development` is the single entry point for new work.
 
 ---
 
@@ -66,14 +66,14 @@ uv run pytest -m "not integration"
 
 ## Commits, Stacking & Pull Requests
 
-> See [GRAPHITE.md](./GRAPHITE.md) for the full Graphite workflow reference.
+> See [`.agents/skills/gh-stack/SKILL.md`](https://github.com/the-hcma/repository-helpers/blob/main/.agents/skills/gh-stack/SKILL.md) in repository-helpers for the full stacking workflow, and `.agents/rules/stacking-tool.md` for the marker contract.
 
-- This project uses **Graphite (`gt`)** for branch stacking.
+- This project stacks branches with **GitHub Stacked PRs** (`gh stack`), as declared in `.github/stacking-tool`.
 - **Worktree-per-stack.** Every new stack is created via `start-development --worktree <name> --no-interactive`.
-- Never work directly on `main`. Create stacked branches with `gt create <stack>/<description> -m "feat: ..."`.
+- Never work directly on `main`. Create stacked branches with `gh stack init <stack>/<description>` / `gh stack add`.
 - Keep each branch focused on one logical change.
-- Submit with `gt submit --no-interactive --publish`.
-- To merge, add the `merge-it` label: `gh pr edit <number> --add-label merge-it`. Never use `gh pr merge` directly.
+- Submit with `scripts/dev/submit-stack` (or `gh stack submit --auto --open --remote origin`); PRs are published, not drafts.
+- To merge, ask the user first, then enqueue on GitHub's merge queue: `gh pr merge <number> --auto --squash`, or `gh stack merge --yes --squash` with no argument (from the stack's worktree; it merges the whole current stack bottom-up, so confirm that whole set with the user first) for a PR that belongs to a gh stack (`scripts/dev/merge-stack --pr <n>` in repository-helpers picks the right one). Do not use the `merge-it` label.
 - Follow **Conventional Commits**: `feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`.
 - PR descriptions must include **Summary** and **Test plan** at minimum.
 

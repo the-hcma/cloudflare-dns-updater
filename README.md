@@ -1,10 +1,6 @@
 # cloudflare-dns-updater
 
-[![CI](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/ci.yml/badge.svg)](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/ci.yml)
-[![Release](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/release-please.yml/badge.svg)](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/release-please.yml)
-[![PyPI](https://img.shields.io/pypi/v/cloudflare-dns-updater.svg)](https://pypi.org/project/cloudflare-dns-updater/)
-[![Python ≥ 3.12](https://img.shields.io/badge/python-%E2%89%A53.12-brightgreen)](https://www.python.org/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![CI](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/ci.yml/badge.svg)](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/ci.yml) [![Release](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/release-please.yml/badge.svg)](https://github.com/the-hcma/cloudflare-dns-updater/actions/workflows/release-please.yml) [![PyPI](https://img.shields.io/pypi/v/cloudflare-dns-updater.svg)](https://pypi.org/project/cloudflare-dns-updater/) [![Python ≥ 3.12](https://img.shields.io/badge/python-%E2%89%A53.12-brightgreen)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 Update Cloudflare DNS **A** and **AAAA** records when your external IP address changes.
 
@@ -183,4 +179,4 @@ This repo follows [the-hcma](https://github.com/the-hcma) conventions. Validate 
 scripts/check-repo-practices --repo the-hcma/cloudflare-dns-updater --suggest
 ```
 
-See [GRAPHITE.md](./GRAPHITE.md) for stacked PRs and the `merge-it` merge queue.
+See `AGENTS.md` for stacked PRs (`gh stack`) and merging through the GitHub merge queue.
