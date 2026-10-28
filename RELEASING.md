@@ -38,7 +38,7 @@ Use **squash merge only** on `main` (`squash_merge_commit_message: BLANK`). Merg
 
 1. Land changes on `main` with [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, …).
 2. Release Please opens or updates a release PR (`chore(main): release X.Y.Z`) bumping `pyproject.toml`, `CHANGELOG.md`, and the project’s own version entry in `uv.lock` (via `extra-files` in `release-please-config.json`; jsonpath must use `@.name.value=='…'` because release-please’s TOML updater wraps string scalars). The **Release Please** workflow publishes **Python lint & format checks** and **Pytest (hermetic)** on that PR (bot pushes do not trigger `ci.yml`). CI runs `assert-uv-lock-version` **before** `uv sync` so a silent jsonpath miss fails the release PR instead of shipping skew.
-3. Merge the release PR through the GitHub merge queue (`gh pr merge <number> --auto --squash`).
+3. After the user explicitly confirms, merge the release PR from its worktree with `${REPOSITORY_HELPERS_DIR:-$HOME/work/ai/repository-helpers}/scripts/dev/merge-stack --pr <number>`, which enqueues it on the GitHub merge queue (do not run `gh pr merge` by hand).
 4. GitHub tags the release and **Release Please** runs **Publish to PyPI**.
 
 ## Manual publish (fallback)
