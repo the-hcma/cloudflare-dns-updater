@@ -73,7 +73,7 @@ uv run pytest -m "not integration"
 - Never work directly on `main`. Create stacked branches with `gh stack init <stack>/<description>` / `gh stack add`.
 - Keep each branch focused on one logical change.
 - Submit with `scripts/dev/submit-stack` (or `gh stack submit --auto --open --remote origin`); PRs are published, not drafts.
-- To merge, ask the user first, then enqueue on GitHub's merge queue: `gh pr merge <number> --auto --squash`, or `gh stack merge --yes --squash` with no argument (from the stack's worktree; it merges the whole current stack bottom-up, so confirm that whole set with the user first) for a PR that belongs to a gh stack (`scripts/dev/merge-stack --pr <n>` in repository-helpers picks the right one). Do not use the `merge-it` label.
+- Merge only after the user explicitly confirms, and only with `${REPOSITORY_HELPERS_DIR:-$HOME/work/ai/repository-helpers}/scripts/dev/merge-stack --pr <n>` from the PR's worktree: it picks the right command for the repository's merge setup (`gh stack merge` for a stacked PR, the merge queue or auto-merge otherwise) and confirms the enqueue. For a PR in a gh stack it lands the top PR and every open PR below it, so name those PRs and get confirmation for the whole stack first. Do not call `gh pr merge` or `gh stack merge` by hand, do not add the `merge-it` label, and do not pipe the command through `tail` or `head`: read its exit status and output.
 - Follow **Conventional Commits**: `feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`.
 - PR descriptions must include **Summary** and **Test plan** at minimum.
 
