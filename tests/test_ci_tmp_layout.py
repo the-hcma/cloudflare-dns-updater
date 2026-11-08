@@ -13,6 +13,8 @@ _WRAPPERS = ("mypy", "pytest-hermetic", "python-static", "ruff")
 
 
 def _run(wrapper: str, tmp_path: Path, **env: str) -> subprocess.CompletedProcess[str]:
+    """Run a CI wrapper with a helper-less HOME and the given extra environment."""
+
     empty = tmp_path / "no-helpers"
     empty.mkdir(exist_ok=True)
     base = {
@@ -34,6 +36,8 @@ def _run(wrapper: str, tmp_path: Path, **env: str) -> subprocess.CompletedProces
 
 @pytest.mark.parametrize("wrapper", _WRAPPERS)
 def test_ci_without_the_layout_helper_fails_with_a_pointer_to_the_action(wrapper: str, tmp_path: Path) -> None:
+    """In GitHub Actions a missing helper is an error naming the setup action."""
+
     result = _run(wrapper, tmp_path, GITHUB_ACTIONS="true")
     assert result.returncode == 1
     assert "setup-tmp-layout" in result.stderr
@@ -41,6 +45,8 @@ def test_ci_without_the_layout_helper_fails_with_a_pointer_to_the_action(wrapper
 
 @pytest.mark.parametrize("wrapper", _WRAPPERS)
 def test_wrapper_re_execs_through_the_layout_helper_when_present(wrapper: str, tmp_path: Path) -> None:
+    """A present helper receives the wrapper, with the pytest layer added for hermetic tests."""
+
     helpers = tmp_path / "helpers"
     (helpers / "scripts" / "dev").mkdir(parents=True)
     stub = helpers / "scripts" / "dev" / "with-tmp-layout"
