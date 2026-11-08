@@ -49,5 +49,5 @@ def test_wrapper_re_execs_through_the_layout_helper_when_present(wrapper: str, t
     result = _run(wrapper, tmp_path, REPOSITORY_HELPERS_DIR=str(helpers))
     assert result.returncode == 0
     assert result.stdout.startswith("layout:uv --")
-    expected = "pytest " if wrapper == "pytest-hermetic" else ""
-    assert f"layout:uv -- {'' if not expected else str(stub) + ' pytest -- '}bash" in result.stdout
+    nested = f"{stub} pytest -- " if wrapper == "pytest-hermetic" else ""
+    assert f"layout:uv -- {nested}bash" in result.stdout
