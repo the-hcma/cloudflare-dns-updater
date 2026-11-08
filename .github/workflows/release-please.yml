@@ -117,6 +117,8 @@ jobs:
 
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
 
+      - uses: the-hcma/repository-helpers/actions/setup-tmp-layout@bfee0e1f2d682e83c6207a0d6a0f7feefa576fd8
+
       - name: ${{ matrix.check.name }}
         env:
           GH_TOKEN: ${{ github.token }}
@@ -144,6 +146,8 @@ jobs:
 
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
 
+      - uses: the-hcma/repository-helpers/actions/setup-tmp-layout@bfee0e1f2d682e83c6207a0d6a0f7feefa576fd8
+
       - name: Verify version (manual dispatch)
         if: github.event_name == 'workflow_dispatch'
         shell: bash
@@ -156,7 +160,11 @@ jobs:
           fi
 
       - name: Install Python dependencies (dev)
-        run: uv sync --group dev
+        run: |
+          layout="$REPOSITORY_HELPERS_DIR/scripts/dev/with-tmp-layout"
+          "$layout" uv -- uv sync --group dev
+          # Later steps run uv too: keep them on the same layout cache.
+          "$layout" uv -- bash -c "printf 'UV_CACHE_DIR=%s\\n' \"\$UV_CACHE_DIR\" >> \"\$GITHUB_ENV\""
 
       - name: Python lint & format checks
         run: bash .github/ci/python-static
@@ -178,7 +186,9 @@ jobs:
           uv run python scripts/embed_build_metadata.py
 
       - name: Build distributions
-        run: uv build
+        run: |
+          layout="$REPOSITORY_HELPERS_DIR/scripts/dev/with-tmp-layout"
+          "$layout" uv -- uv build
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
