@@ -30,7 +30,7 @@ classifiers = [
 ]
 dependencies = [
     "annotated-types==0.8.0",
-    "anyio>=4.15.1",
+    "anyio>=4.16.0",
     "ast-serialize>=0.13.1",
     "certifi>=2026.10.23",
     "charset-normalizer>=3.5.2",
