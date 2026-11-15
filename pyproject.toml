@@ -34,13 +34,13 @@ dependencies = [
     "ast-serialize>=0.13.1",
     "certifi>=2026.10.23",
     "charset-normalizer>=3.5.2",
-    "cloudflare>=5.9.0",
+    "cloudflare>=5.10.0",
     "idna>=3.20",
     "librt>=0.16.0",
     "mypy>=2.4.1",
     "netifaces>=0.11.0",
     "requests>=2.34.2",
-    "ruff>=0.17.3",
+    "ruff>=0.17.4",
     "types-requests>=2.33.0.20261030",
     "typing-extensions==4.16.0",
 ]
@@ -69,7 +69,7 @@ packages = ["src/dns_updater"]
 dev = [
     "mypy>=2.4.1",
     "pytest>=9.2.0",
-    "ruff>=0.17.3",
+    "ruff>=0.17.4",
     "types-requests>=2.33.0.20261030",
 ]
 
